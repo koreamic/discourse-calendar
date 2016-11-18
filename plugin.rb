@@ -6,14 +6,14 @@
 register_asset  "stylesheets/discourse-calendar.scss"
 register_asset  "javascripts/vendor/fullcalendar/fullcalendar.js"
 
-PLUGIN_NAME ||= "discourse_calendar".freeze
+PLUGIN_NAME ||= "discourse-calendar".freeze
 
 after_initialize do
   puts "calendar plugin initialize"
   puts "PostCalendar class Define"
   puts "#{Rails.root}"
 
-  autoload :PostCalendar, "#{Rails.root}/plugins/discourse-calendar/models/post_calendar"
+  autoload :PostSchedule, "#{Rails.root}/plugins/discourse-calendar/models/post_schedule"
 
   #PostCalendar.new
   #puts PostCalendar
@@ -24,7 +24,7 @@ after_initialize do
 
   Post.class_eval do
     puts "calendar plugin post class_eval"
-    has_one :post_calendar
+    has_many :post_schedule, class_name: "PostSchedule", dependent: :delete_all
   end 
   
 end
