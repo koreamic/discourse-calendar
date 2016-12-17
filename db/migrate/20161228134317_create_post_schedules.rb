@@ -1,7 +1,6 @@
-class ReReReReRecreatePostSchedule < ActiveRecord::Migration
-  def change
-    drop_table :post_schedules
+class CreatePostSchedules < ActiveRecord::Migration
 
+  def self.up
     create_table :post_schedules do |t|
       t.integer :post_id
       t.integer :schedule_number, null: false
@@ -11,5 +10,12 @@ class ReReReReRecreatePostSchedule < ActiveRecord::Migration
       t.boolean :all_day, default: false
       t.timestamps
     end
+
+    add_index :post_schedules, [:start_date_time, :end_date_time]
   end
+
+  def self.down
+    drop_table :post_schedules
+  end
+
 end
