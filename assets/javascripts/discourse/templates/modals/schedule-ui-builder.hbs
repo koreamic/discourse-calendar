@@ -1,0 +1,37 @@
+<div class="modal-body schedule-ui-builder change-timestamp" style="height=400px">
+  <form class="form-horizontal">
+    <div class="input-group">
+      <label class="input-group-label">
+        {{i18n "calendar.schedule.ui_builder.input_title"}}
+      </label>
+      {{input type="text" value=title maxlength=256}}
+    </div>
+    <div class="input-group">
+      {{input type='checkbox' checked=allDay}}
+      {{i18n "calendar.schedule.ui_builder.all_day"}}
+    </div>
+    <div class="input-group">
+      <label class="input-group-label">
+        {{i18n "calendar.schedule.ui_builder.input_start_date_time"}}
+      </label>
+      {{date-picker value=startDate containerId="schedule-start-date-container"}}
+      {{input type="time" value=startTime disabled=isAllDaySchedule}}
+      {{input-tip validation=startDateTimeValidation}}
+    </div>
+    <div class="input-group">
+      <label class="input-group-label">
+        {{i18n "calendar.schedule.ui_builder.input_end_date_time"}}
+      </label>
+      {{date-picker value=endDate containerId="schedule-end-date-container"}}
+      {{input type="time" value=endTime disabled=isAllDaySchedule}}
+      {{input-tip validation=scheduleDateTimeValidation}}
+    </div>
+  </form>
+  <div id="schedule-from-date-container" cladd="pull-left"/>
+  <div id="schedule-to-date-container" class="pull-right"/>
+
+</div>
+
+<div class="modal-footer">
+  {{d-button action="insertSchedule" icon="calendar" class='btn-primary' label='calendar.schedule.ui_builder.insert' disabled=disableInsert}}
+</div>

@@ -1,7 +1,7 @@
 import { withPluginApi } from 'discourse/lib/plugin-api';
 import showModal from 'discourse/lib/show-modal';
 
-function initializeCalendarUIBuilder(api) {
+function initializeScheduleUIBuilder(api) {
   const siteSettings = api.container.lookup('site-settings:main');
 
   if (!siteSettings.calendar_enabled && (api.getCurrentUser() && !api.getCurrentUser().staff)) return;
@@ -9,25 +9,25 @@ function initializeCalendarUIBuilder(api) {
   const ComposerController = api.container.lookupFactory("controller:composer");
   ComposerController.reopen({
     actions: {
-      showCalendarBuilder() {
-        showModal("calendar-ui-builder").set("toolbarEvent", this.get("toolbarEvent"));
+      showScheduleBuilder() {
+        showModal("schedule-ui-builder").set("toolbarEvent", this.get("toolbarEvent"));
       }
     }
   });
 
   api.addToolbarPopupMenuOptionsCallback(function() {
     return {
-      action: 'showCalendarBuilder',
+      action: 'showScheduleBuilder',
       icon: 'calendar',
-      label: 'calendar.ui_builder.title'
+      label: 'calendar.schedule.ui_builder.title'
     };
   });
 }
 
 export default {
-  name: "add-calendar-ui-builder",
+  name: "add-schedule-ui-builder",
 
   initialize() {
-    withPluginApi('0.5', initializeCalendarUIBuilder);
+    withPluginApi('0.5', initializeScheduleUIBuilder);
   }
 };
