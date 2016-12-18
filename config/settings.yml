@@ -1,7 +1,4 @@
 plugins:
-  calendar_category_enabled:
+  calendar_enabled:
     default: true
-    client: true
-  calendar_category_max_volume:
-    default: 10
     client: true

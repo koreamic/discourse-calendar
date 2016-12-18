@@ -1,0 +1,26 @@
+<div class="modal-body calendar-ui-builder change-timestamp" style="height=400px">
+
+  <form class="form-horizontal">
+    <div class="input-group">
+      <label class="input-group-label">Title</label>
+      {{input type="text" value=title}}
+    </div>
+    <div class="input-group">
+      <label class="input-group-label">From Date Time</label>
+      {{date-picker value=fromDate containerId="schedule-from-date-container"}}
+      {{input type="time" value=fromTime}}
+    </div>
+    <div class="input-group">
+      <label class="input-group-label">To Date Time</label>
+      {{date-picker value=toDate containerId="schedule-to-date-container"}}
+      {{input type="time" value=toTime}}
+    </div>
+  </form>
+  <div id="schedule-from-date-container" cladd="pull-left"/>
+  <div id="schedule-to-date-container" class="pull-right"/>
+
+</div>
+
+<div class="modal-footer">
+  {{d-button action="insertSchedule" icon="calendar" class='btn-primary' label='calendar.ui_builder.insert' disabled=disableInsert}}
+</div>
