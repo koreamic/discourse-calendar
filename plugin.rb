@@ -48,7 +48,6 @@ after_initialize do
 
       def start_date_time_not_nil?(schedule)
         if schedule.start_date_time.nil?
-          #@post.errors.add(:base, I18n.t("poll.multiple_polls_without_name"))
           @post.errors.add(:base, I18n.t("caledar.schedule.default_schedule_must_have_start_date_time"))
           return false
         end
@@ -58,7 +57,6 @@ after_initialize do
       def valid_date_times?(schedule)
         unless schedule.end_date_time.nil?
           if schedule.start_date_time >= schedule.end_date_time
-            #@post.errors.add(:base, I18n.t("poll.multiple_polls_without_name"))
             @post.errors.add(:base, I18n.t("caledar.schedule.validate_start_end_date_time"))
             return false
           end
@@ -75,30 +73,28 @@ after_initialize do
       def extract(raw)
         extracted_schedules = []
 
-        schedule_pattern = /\[schedule(?:\s+(?:\w+=[^\s]+)\s*)*\][\s\S]*\[\/schedule\]/
-        #title_pattern = /^\[schedule(?:\s+(?:\w+=[^\s]+)\s*)*\](.*)\[\/schedule\]$/
-        header_pattern = /^\[schedule(?:\s+(?:\w+=[^\s\]]+)\s*)*\]/
-        attributes_pattern = /\w+=[^\s\]]+/
+        schedule_pattern = /\[schedule(?:\s+(?:\w+=(?:['"][\S\s^\]]+['"]|['"]?[^\s\]]+['"]?))*\s*)*\][\s\S]*\[\/schedule\]/
+        header_pattern = /^\[schedule(?:\s+(?:\w+=(?:['"][\S\s^\]]+['"]|['"]?[^\s\]]+['"]?))*\s*)*\]/
+        attributes_pattern = /\w+=(?:['"][\S\s^\]]+['"]|['"]?[^\s\]]+['"]?)/
 
         raw.scan(schedule_pattern).each_with_index do |raw_schedule, index|
           schedule = {}
           schedule["schedule_number"] = index+1
-          #byebug
-
-          #title = raw_schedule.scan(title_pattern).first.first;
-          #schedule["title"] = title
 
           raw_schedule.scan(header_pattern).first.scan(attributes_pattern).each do |attribute|
-            key_value = attribute.split("=")
-            schedule[key_value[0]] = key_value[1]
+            index = attribute.index("=")
+            key = attribute[0, index]
+            value = attribute[index+1..-1]
+
+            if (value[0] == "'" && value[-1] == "'") || (value[0] == "\"" && value[-1] == "\"")
+              value = value[1..-2]
+           end
+
+            schedule[key] = value
           end
-          puts schedule
+
           extracted_schedules << schedule.slice("schedule_number", "title", "start_date_time", "end_date_time", "all_day")
         end
-
-        puts "================================================"
-        puts extracted_schedules
-        puts "================================================"
 
         extracted_schedules
       end
@@ -106,23 +102,7 @@ after_initialize do
   end
 
   Post.class_eval do
-    puts "calendar plugin post class_eval"
     has_many :post_schedules, class_name: "PostSchedule", dependent: :delete_all
-    
-    after_save do
-      puts "calendar plugin post class eval after_save"
-
-      #puts self.post_schdules
-      puts self
-    end
-
-    #after_save do
-      #return if !SiteSetting.calendar_enabled? && (self.user && !self.user.staff?)
-      #return unless self.raw_changed?
-
-      #extracted_schedules = DiscourseCalendar::Schedule::extract(self.raw, self.topic_id, self.user_id)
-      #return unless (schedules = DiscourseCalendar::Schedule::validate(extracted_schedules))
-    #end
   end 
   
   DiscourseCalendar::Engine.routes.draw do
@@ -228,16 +208,11 @@ after_initialize do
       list_options = build_topic_list_options
       list_options.merge!(options) if options
 
-      #category = params[:category];
-      #results_options = {:limit => false, :category =>  category}
-
       start_date = Date.strptime(params[:start], '%s')
       end_date = Date.strptime(params[:end], '%s')
       
       user = list_target_user
       
-      #byebug
-
       #TODO method로 분리
       topic_query = TopicQuery.new(user, list_options)
       topic_results = topic_query.latest_results
@@ -285,20 +260,6 @@ after_initialize do
     validator = DiscourseCalendar::ScheduleValidator::new(self)
     return unless (schedules = validator.validate_schedules)
 
-    #puts "post_schedules #{schedules}"
-    # are we updating a post?
-    # TODO 더 멋있게 할 수 없을까?
-    #if self.id.present?
-      #puts "post id exists"
-      #previous_schedules = self.post_schedules || {}
-      #byebug
-
-    #else
-      #puts "post id not exists"
-      #self.post_schedules = schedules
-    #end
-
-    # all delete all insert
     self.post_schedules = schedules
 
     true

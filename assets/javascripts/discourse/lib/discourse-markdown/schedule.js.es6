@@ -1,7 +1,8 @@
 import { registerOption } from 'pretty-text/pretty-text';
 
 const WHITELISTED_ATTRIBUTES = ["title", "all_day", "start_date_time", "end_date_time"];
-const ATTRIBUTES_REGEX = new RegExp("(" + WHITELISTED_ATTRIBUTES.join("|") + ")=['\"]?[^\\s\\]]+['\"]?", "g");
+const ATTRIBUTES_REGEX = new RegExp("(" + WHITELISTED_ATTRIBUTES.join("|") + ")=(['\"][\\S\\s\^\\]]+['\"]|['\"]?[^\\s\\]]+['\"]?)", "g");
+const VALUE_REGEX = new RegExp("^['\"]?([\\s\\S]+)['\"]?$", "g");
 
 registerOption((siteSettings, opts) => {
   opts.features.schedule = true;
@@ -17,7 +18,9 @@ export function setup(helper) {
 
 
   helper.replaceBlock({
-    start: /\[schedule((?:\s+\w+=[^\s\]]+)*)\]([\s\S]*)/igm,
+    //start: /\[schedule((?:\s+\w+=[^\s\]]+)*)\]([\s\S]*)/igm,
+    //start: /\[schedule((?:\s+\w+=[\S\s\]]+)*)\]([\s\S]*)/igm,
+    start: /\[schedule((?:\s+\w+=(?:['"][\S\s^\]]+['"]|['"]?[^\s\]]+['"]?))*)\]([\s\S]*)/igm,
     stop: /\[\/schedule\]/igm,
 
     emitter(blockContents, matches) {
@@ -53,8 +56,16 @@ export function setup(helper) {
       let allDay = false;
       let startEndRange = " ~ ";
       (matches[1].match(ATTRIBUTES_REGEX) || []).forEach(function(m) {
-        const [ name, value ] = m.split("=");
-        const escaped = helper.escape(value.replace(/["']/g, ""));
+        //const [ name, value ] = m.split("=");
+        const idx = m.indexOf("=");
+        const name = m.substring(0, idx);
+        let value = m.substring(idx+1);
+        if(value.startsWith("'") && value.endsWith("'") || value.startsWith("\"") && value.endsWith("\"")){
+          value = value.substring(1, value.length-1);
+        }
+               
+        const escaped = helper.escape(value);
+        //const escaped = helper.escape(value.replace(/["']/g, ""));
 
         switch (name) {
           case "title":
@@ -93,8 +104,6 @@ export function setup(helper) {
         extraContents.push(contents[0]);
         schedule.push(extraContents);
       }
-
-      //schedule.push(container);
 
       return schedule;
     }

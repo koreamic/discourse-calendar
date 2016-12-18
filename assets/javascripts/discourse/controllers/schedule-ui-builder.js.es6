@@ -108,10 +108,10 @@ export default Ember.Controller.extend({
     */
     
     output += "[schedule";
-    output += " title="+title; 
-    output += " start_date_time="+startDate + (startTime ? "T"+startTime : ""); 
-    output += " end_date_time="+endDate + (endTime ? "T"+endTime : ""); 
-    output += " all_day="+allDay; 
+    output += " title='" + title + "'"; 
+    output += " start_date_time=" + startDate + (startTime ? "T" + startTime : ""); 
+    output += " end_date_time=" + endDate + (endTime ? "T" + endTime : ""); 
+    output += " all_day=" + allDay; 
     output += "]\n";
     output += "[/schedule]";
     
