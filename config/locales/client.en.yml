@@ -2,5 +2,8 @@ en:
   js:
     calendar:
       ui_builder:
-        title: Set Schedule
+        title: Add Schedule
         insert: Insert Schedule
+      ui:
+        show_label: Show Calendar
+        hide_label: Hide Calendar

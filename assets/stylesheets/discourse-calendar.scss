@@ -3,3 +3,17 @@
 .calendar {
   margin: 0 auto;
 }
+
+.calendar-toggle-button{
+  cursor: pointer;
+  text-align: center;
+  //background: #b2b2b2;
+  background: #e9e9e9;
+  //border: solid 1px #666;
+  //color: #ffffff;
+  //border-radius: 3px;
+}
+.calendar-toggle-button:hover{
+  background: #b2b2b2;
+  color: white;
+}

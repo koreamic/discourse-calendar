@@ -1,5 +1,13 @@
 <div class='discourse-calendar-container'>
-  <p class='calendar-toggle-button'>Show Calendar</p>
+  <div>
+    <!--
+    <label {{action 'toggleCalendar'}} class='calendar-toggle-button'>
+    -->
+    <label class='calendar-toggle-button'>
+      {{fa-icon 'calendar'}}
+      <span>{{i18n 'calendar.ui.show_label'}}</span>
+    </label>
+  </div>
   <div class='calendar-container' style="display: none">
     <div class='calendar'></div>
   </div>

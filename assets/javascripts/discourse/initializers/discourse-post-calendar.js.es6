@@ -8,33 +8,47 @@ function initializeDiscoursePostCalendar(api) {
   const siteSettings = api.container.lookup('site-settings:main');
 
   if (!siteSettings.calendar_enabled && (api.getCurrentUser() && !api.getCurrentUser().staff)) return;
- // const discoveryController = api.container.lookup('controller:discovery');
 
+  const discoveryController = api.container.lookupFactory('controller:discovery');
+  //const discoveryController = api.container.lookupFactory('controller:discovery');
+  /*
+  discoveryController.reopen({
+    isCalendarShow: false,
+    calendarLabel: I18n.t('calendar.ui.'),
+    actions: {
+      toggleCalendar(){
+        debugger;
+        this.isCalednarShow = !this.isCalednarShow;
+      }
+    }
+  });
+  */
   Ember.ContainerView.reopen({
     didInsertElement : function(){
       this._super();
       Ember.run.scheduleOnce('afterRender', this, this.afterRenderEvent);
     },
     afterRenderEvent : function(){
-      /*
-      toggle hide
-      calendar destroy
-      check calendar initialized????
-      click
-      -> show -> hide
-      -> hide -> show -> check reder ? not render, reder calendar
-      */
+      
+      //toggle hide
+      //calendar destroy
+      //check calendar initialized????
+      //click
+      //-> show -> hide
+      //-> hide -> show -> check reder ? not render, reder calendar
       const $button = $('.calendar-toggle-button');
       const $div = $('.calendar');
       $button.off('click');
 
       $button.click(function(){
-        debugger;
         const $calendarContainer = $('.calendar-container');
         if($calendarContainer.is(':visible')){
           $calendarContainer.slideUp('slow');
+          $(this).find('span').text(I18n.t('calendar.ui.show_label'));
         }else{
           $calendarContainer.slideDown('slow');
+          $(this).find('span').text(I18n.t('calendar.ui.hide_label'));
+          $('.calendar').fullCalendar('render');
         }
       });
 
@@ -71,7 +85,7 @@ function initializeCalendar($div){
     eventLimit: true, // allow "more" link when too many events
     timeFormat:'H:m',
     events : function(start, end, timezone, callback){
-      debugger;
+      console.log(Category.id);
       $.ajax({
         url: '/calendar/schedules',
         dataType: 'json',
