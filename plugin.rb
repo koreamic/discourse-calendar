@@ -34,7 +34,6 @@ after_initialize do
 
         extracted_schedules.each do |extracted_schedule|
           schedule = PostSchedule.new(extracted_schedule)
-          byebug
           return false unless start_date_time_not_nil?(schedule)
           return false unless title_not_nil?(schedule)
           return false unless valid_date_times?(schedule)
@@ -137,6 +136,72 @@ after_initialize do
       
     #end
   end 
+  
+  DiscourseCalendar::Engine.routes.draw do
+    get "/schedules" => "calendar#schedules"
+  end
+
+  Discourse::Application.routes.append do
+    mount ::DiscourseCalendar::Engine, at: "/calendar"
+  end
+
+  require_dependency "application_controller"
+
+  class DiscourseCalendar::CalendarController < ::ApplicationController
+
+    def schedules
+
+      start_date = Date.strptime(params[:start], '%s')
+      end_date = Date.strptime(params[:end], '%s')
+
+      category = params[:category];
+      results_options = {:limit => false, :category =>  category}
+      user = current_user
+
+      #TODO method로 분리
+      topic_query = TopicQuery.new(user, results_options)
+      topic_results = topic_query.latest_results
+      topic_post_results = topic_results.joins(:posts)
+      topic_post_schedule_results = topic_post_results.joins("INNER JOIN post_schedules ON (posts.id = post_schedules.post_id)")
+      topic_post_schedule_month_results = topic_post_schedule_results.where("post_schedules.start_date_time < ?", end_date).where("post_schedules.end_date_time >= ?", start_date)
+      schedules = []
+
+      topic_post_schedule_month_results.each do |t|
+        schedule = {}
+        schedule[:topic_title] = t.title
+        schedule[:topic_id] = t.id
+        
+        t.posts.each do |p|
+          schedule[:post_id] = p.id
+          schedule[:post_url] = p.url
+          schedule[:url] = p.url
+          schedule[:post_full_url] = p.url
+
+          p.post_schedules.each do |s|
+           schedule[:title] = s.title ? s.title : t.title
+           schedule[:start_date_time] = s.start_date_time.strftime("%Y-%m-%dT%H:%M:%S")
+           schedule[:start] = s.start_date_time.strftime("%Y-%m-%dT%H:%M:%S")
+           schedule[:end_date_time] = s.end_date_time.strftime("%Y-%m-%dT%H:%M:%S")
+           schedule[:end] = s.end_date_time.strftime("%Y-%m-%dT%H:%M:%S")
+           schedule[:all_day] = s.all_day
+           schedule[:allDay] = s.all_day
+          end
+        end
+        schedules << schedule
+      end
+      
+      logger.debug "================================================"
+      logger.debug schedules
+      logger.debug "================================================"
+
+      render_json_dump(schedules: schedules)
+
+
+      #topic_results = TopicQuery.new(user, results_options).latest_results.joins(:posts).joins("INNER JOIN post_schedules ON (posts.id = post_schedules.post_id)")
+
+    end
+
+  end
 
   validate(:post, :validate_schedules) do
     puts "calendar  plugin validate!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
