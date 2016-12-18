@@ -24,12 +24,14 @@ export default Ember.Controller.extend({
     let scheduleHeader = '[schedule';
     let output = '';
 
+    /*
     const match = this.get("toolbarEvent").getText().match(/\[schedule(\s+name=[^\s\]]+)*.*\]/igm);
     if (match) {
       scheduleHeader += ` schedule_number=${match.length + 1}`;
     }else{
       scheduleHeader += ` schedule_number=1`;
     };
+    */
     
     output += `${scheduleHeader}`;
     output += " start_date_time="+startDate + (startTime ? "T"+startTime : ""); 
