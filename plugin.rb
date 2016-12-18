@@ -9,15 +9,9 @@ register_asset  "javascripts/vendor/fullcalendar/fullcalendar.js"
 PLUGIN_NAME ||= "discourse-calendar".freeze
 
 after_initialize do
-  puts "calendar plugin initialize"
-  puts "PostCalendar class Define"
-  puts "#{Rails.root}"
-
   load File.expand_path(File.dirname(__FILE__)) << '/models/post_schedule.rb'  
 
   module ::DiscourseCalendar
-    #autoload :PostSchedule, "#{Rails.root}/plugins/discourse-calendar/models/post_schedule"
-
     class Engine < ::Rails::Engine
       engine_name PLUGIN_NAME
       isolate_namespace DiscourseCalendar
@@ -35,7 +29,14 @@ after_initialize do
         extracted_schedules.each do |extracted_schedule|
           schedule = PostSchedule.new(extracted_schedule)
           return false unless start_date_time_not_nil?(schedule)
-          return false unless title_not_nil?(schedule)
+          if schedule.end_date_time.nil?
+            if schedule.all_day
+              schedule.start_date_time = schedule.start_date_time.beginning_of_day
+              schedule.end_date_time = schedule.start_date_time.end_of_day
+            else
+              schedule.end_date_time = schedule.start_date_time + 1.hours
+            end
+          end
           return false unless valid_date_times?(schedule)
           schedules << schedule
         end
@@ -44,29 +45,31 @@ after_initialize do
       end
 
       private
+
       def start_date_time_not_nil?(schedule)
         if schedule.start_date_time.nil?
           #@post.errors.add(:base, I18n.t("poll.multiple_polls_without_name"))
-          @post.errors.add(:base, "start date time is not empty!!!!!")
+          @post.errors.add(:base, I18n.t("caledar.schedule.default_schedule_must_have_start_date_time"))
           return false
         end
         true
       end
 
-      def title_not_nil?(schedule)
-        if schedule.title.nil? or schedule.title.empty?
-          #@post.errors.add(:base, I18n.t("poll.multiple_polls_without_name"))
-          @post.errors.add(:base, "title is not empty!!!!!")
-          return false
-        end
-        true
-      end
-    
+      #def title_not_nil?(schedule)
+        #if schedule.title.nil? or schedule.title.empty?
+          ##@post.errors.add(:base, I18n.t("poll.multiple_polls_without_name"))
+          #@post.errors.add(:base, "title is not empty!!!!!")
+          #return false
+        #end
+
+        #true
+      #end
+
       def valid_date_times?(schedule)
         unless schedule.end_date_time.nil?
           if schedule.start_date_time >= schedule.end_date_time
             #@post.errors.add(:base, I18n.t("poll.multiple_polls_without_name"))
-            @post.errors.add(:base, "start end date times invalid!!!!!")
+            @post.errors.add(:base, I18n.t("caledar.schedule.validate_start_end_date_time"))
             return false
           end
         end
@@ -87,14 +90,10 @@ after_initialize do
         header_pattern = /^\[schedule(?:\s+(?:\w+=[^\s\]]+)\s*)*\]/
         attributes_pattern = /\w+=[^\s\]]+/
 
-        puts "into-raw-scan================================================"
-        puts raw
-        puts "into-raw-scan================================================"
-
-        #raw.scan(schedule_pattern).each_with_index { |raw_schedule, index|
         raw.scan(schedule_pattern).each_with_index do |raw_schedule, index|
           schedule = {}
           schedule["schedule_number"] = index+1
+          #byebug
 
           title = raw_schedule.scan(title_pattern).first.first;
           schedule["title"] = title
@@ -104,7 +103,7 @@ after_initialize do
             schedule[key_value[0]] = key_value[1]
           end
           puts schedule
-          extracted_schedules << schedule
+          extracted_schedules << schedule.slice("schedule_number", "title", "start_date_time", "end_date_time", "all_day")
         end
 
         puts "================================================"
@@ -133,7 +132,6 @@ after_initialize do
 
       #extracted_schedules = DiscourseCalendar::Schedule::extract(self.raw, self.topic_id, self.user_id)
       #return unless (schedules = DiscourseCalendar::Schedule::validate(extracted_schedules))
-      
     #end
   end 
   
@@ -178,34 +176,24 @@ after_initialize do
           schedule[:post_full_url] = p.url
 
           p.post_schedules.each do |s|
-           schedule[:title] = s.title ? s.title : t.title
-           schedule[:start_date_time] = s.start_date_time.strftime("%Y-%m-%dT%H:%M:%S")
-           schedule[:start] = s.start_date_time.strftime("%Y-%m-%dT%H:%M:%S")
-           schedule[:end_date_time] = s.end_date_time.strftime("%Y-%m-%dT%H:%M:%S")
-           schedule[:end] = s.end_date_time.strftime("%Y-%m-%dT%H:%M:%S")
-           schedule[:all_day] = s.all_day
-           schedule[:allDay] = s.all_day
+            schedule[:id] = s.id
+            schedule[:title] = s.title ? s.title : t.title
+            schedule[:start_date_time] = s.start_date_time.strftime("%Y-%m-%dT%H:%M:%S")
+            schedule[:start] = s.start_date_time.strftime("%Y-%m-%dT%H:%M:%S")
+            schedule[:end_date_time] = s.end_date_time.strftime("%Y-%m-%dT%H:%M:%S")
+            schedule[:end] = s.end_date_time.strftime("%Y-%m-%dT%H:%M:%S")
+            schedule[:all_day] = s.all_day
+            schedules << schedule
           end
         end
-        schedules << schedule
       end
-      
-      logger.debug "================================================"
-      logger.debug schedules
-      logger.debug "================================================"
 
       render_json_dump(schedules: schedules)
 
-
-      #topic_results = TopicQuery.new(user, results_options).latest_results.joins(:posts).joins("INNER JOIN post_schedules ON (posts.id = post_schedules.post_id)")
-
     end
-
   end
 
   validate(:post, :validate_schedules) do
-    puts "calendar  plugin validate!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-
     return if !SiteSetting.calendar_enabled? && (self.user && !self.user.staff?)
     
     # only care when raw has changed!
