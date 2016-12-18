@@ -5,7 +5,6 @@
 
 register_asset  "stylesheets/discourse-calendar.scss"
 register_asset  "javascripts/vendor/fullcalendar/fullcalendar.js"
-register_asset  "javascripts/vendor/datetimepicker/jquery.datetimepicker.full.js"
 
 PLUGIN_NAME ||= "discourse_calendar".freeze
 
