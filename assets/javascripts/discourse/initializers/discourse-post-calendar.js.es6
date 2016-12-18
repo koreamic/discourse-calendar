@@ -86,8 +86,9 @@ function initializeCalendar($div){
     timeFormat:'H:m',
     events : function(start, end, timezone, callback){
       console.log(Category.id);
+      //debugger;
       $.ajax({
-        url: '/calendar/schedules',
+        url: '/calendar/schedules'.concat(location.pathname),
         dataType: 'json',
         data: {
           start: start.unix(),

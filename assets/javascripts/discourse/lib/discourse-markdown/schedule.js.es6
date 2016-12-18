@@ -9,11 +9,10 @@ registerOption((siteSettings, opts) => {
 
 export function setup(helper) {
   helper.whiteList([
-    'div.ui card',
+    'div.discourse-ui-card',
     'div.content',
     'div.extra content',
-    'div.header',
-    'li'
+    'div.header'
   ]);
 
 
@@ -22,8 +21,9 @@ export function setup(helper) {
     stop: /\[\/schedule\]/igm,
 
     emitter(blockContents, matches) {
-      const schedule = ["div"];
-      const container = ["div", {"class": "ui card"}];
+      //const schedule = ["div"];
+      //const schedule = ["div", {"class": "ui card"}];
+      const schedule = ["div", {"class": "discourse-ui-card"}];
       const contents = [];
 
       if (blockContents.length){
@@ -50,6 +50,7 @@ export function setup(helper) {
       let startDateTime;
       let endDateTime;
       let dateFormat = "LLL";
+      let allDay = false;
       let startEndRange = " ~ ";
       (matches[1].match(ATTRIBUTES_REGEX) || []).forEach(function(m) {
         const [ name, value ] = m.split("=");
@@ -61,28 +62,39 @@ export function setup(helper) {
             break;
 
           case "start_date_time":
-            startDateTime = moment(escaped);
+            //startDateTime = moment(escaped);
+            startDateTime = new Date(escaped);
             break;
 
           case "end_date_time":
-            endDateTime = moment(escaped);
+            //endDateTime = moment(escaped);
+            endDateTime = new Date(escaped);
             break;
 
           case "all_day":
-            dateFormat = (escaped === "true") ? "LL" : " LLL";
+            //dateFormat = (escaped === "true") ? "LL" : " LLL";
+            allDay = (escaped === "true");
             break;
         }
       });
       
-      startEndRange = startDateTime.format(dateFormat).concat(startEndRange).concat(endDateTime.format(dateFormat));
+      //startEndRange = startDateTime.format(dateFormat).concat(startEndRange).concat(endDateTime.format(dateFormat));
+      if(allDay) {
+        startEndRange = startDateTime.toDateString().concat(startEndRange).concat(endDateTime.toDateString());
+      }else{
+        startEndRange = startDateTime.toDateString().concat(" ".concat(startDateTime.toLocaleTimeString())).concat(startEndRange).concat(endDateTime.toDateString().concat(" ".concat(endDateTime.toLocaleTimeString())));
+      }
+
       duration.push(startEndRange);
-      container.push(title);
-      container.push(duration);
+      schedule.push(title);
+      schedule.push(duration);
+
       if(contents && contents.length > 0){
         extraContents.push(contents[0]);
-        container.push(extraContents);
+        schedule.push(extraContents);
       }
-      schedule.push(container);
+
+      //schedule.push(container);
 
       return schedule;
     }
