@@ -24,7 +24,7 @@ after_initialize do
 
       def validate_schedules
         schedules = []
-        extracted_schedules = DiscourseCalendar::Schedule::extract(@post.raw, @post.topic_id, @post.user_id)
+        extracted_schedules = DiscourseCalendar::Schedule::extract(@post.raw)
 
         extracted_schedules.each do |extracted_schedule|
           schedule = PostSchedule.new(extracted_schedule)
@@ -55,16 +55,6 @@ after_initialize do
         true
       end
 
-      #def title_not_nil?(schedule)
-        #if schedule.title.nil? or schedule.title.empty?
-          ##@post.errors.add(:base, I18n.t("poll.multiple_polls_without_name"))
-          #@post.errors.add(:base, "title is not empty!!!!!")
-          #return false
-        #end
-
-        #true
-      #end
-
       def valid_date_times?(schedule)
         unless schedule.end_date_time.nil?
           if schedule.start_date_time >= schedule.end_date_time
@@ -82,7 +72,7 @@ after_initialize do
 
   class DiscourseCalendar::Schedule
     class << self
-      def extract(raw, topic_id, user_id)
+      def extract(raw)
         extracted_schedules = []
 
         schedule_pattern = /\[schedule(?:\s+(?:\w+=[^\s]+)\s*)*\].*\[\/schedule\]/
@@ -168,6 +158,7 @@ after_initialize do
         schedule = {}
         schedule[:topic_title] = t.title
         schedule[:topic_id] = t.id
+        schedule[:color] = t.category.color ? "\##{t.category.color}" : "#{SiteSetting.calendar_schedule_default_color}"
         
         t.posts.each do |p|
           schedule[:post_id] = p.id
@@ -182,8 +173,8 @@ after_initialize do
             schedule[:start] = s.start_date_time.strftime("%Y-%m-%dT%H:%M:%S")
             schedule[:end_date_time] = s.end_date_time.strftime("%Y-%m-%dT%H:%M:%S")
             schedule[:end] = s.end_date_time.strftime("%Y-%m-%dT%H:%M:%S")
-            schedule[:all_day] = s.all_day
-            schedules << schedule
+            schedule[:allDay] = s.all_day
+            schedules << schedule.clone
           end
         end
       end
@@ -204,13 +195,18 @@ after_initialize do
 
     #puts "post_schedules #{schedules}"
     # are we updating a post?
+    # TODO 더 멋있게 할 수 없을까?
     #if self.id.present?
       #puts "post id exists"
+      #previous_schedules = self.post_schedules || {}
+      #byebug
+
     #else
       #puts "post id not exists"
       #self.post_schedules = schedules
     #end
-    # TODO 더 멋있게 할 수 없을까?
+
+    # all delete all insert
     self.post_schedules = schedules
 
     true

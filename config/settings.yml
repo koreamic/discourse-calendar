@@ -2,3 +2,6 @@ plugins:
   calendar_enabled:
     default: true
     client: true
+  calendar_schedule_default_color:
+    default: 'black'
+    client: true
