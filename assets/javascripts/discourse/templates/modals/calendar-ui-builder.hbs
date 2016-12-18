@@ -7,13 +7,13 @@
     </div>
     <div class="input-group">
       <label class="input-group-label">From Date Time</label>
-      {{date-picker value=fromDate containerId="schedule-from-date-container"}}
-      {{input type="time" value=fromTime}}
+      {{date-picker value=startDate containerId="schedule-start-date-container"}}
+      {{input type="time" value=startTime}}
     </div>
     <div class="input-group">
       <label class="input-group-label">To Date Time</label>
-      {{date-picker value=toDate containerId="schedule-to-date-container"}}
-      {{input type="time" value=toTime}}
+      {{date-picker value=endDate containerId="schedule-end-date-container"}}
+      {{input type="time" value=endTime}}
     </div>
   </form>
   <div id="schedule-from-date-container" cladd="pull-left"/>

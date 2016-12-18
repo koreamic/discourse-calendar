@@ -12,26 +12,28 @@ export default Ember.Controller.extend({
   _setupSchedule() {
     this.setProperties({
       title: '',
-      fromDate: '',
-      fromTime: '',
-      toDate: '',
-      toTime: ''
+      startDate: '',
+      startTime: '',
+      endDate: '',
+      endTime: ''
     });
   },
 
-  @computed("title", "fromDate", "fromTime", "toDate", "toTime")
-  scheduleOutput(title, fromDate, fromTime, toDate, toTime) {
+  @computed("title", "startDate", "startTime", "endDate", "endTime")
+  scheduleOutput(title, startDate, startTime, endDate, endTime) {
     let scheduleHeader = '[schedule';
     let output = '';
 
     const match = this.get("toolbarEvent").getText().match(/\[schedule(\s+name=[^\s\]]+)*.*\]/igm);
     if (match) {
-      scheduleHeader += ` name=schedule${match.length + 1}`;
+      scheduleHeader += ` schedule_number=${match.length + 1}`;
+    }else{
+      scheduleHeader += ` schedule_number=1`;
     };
     
     output += `${scheduleHeader}`;
-    output += " from="+fromDate + (fromTime ? "T"+fromDate : ""); 
-    output += " to="+toDate + (toTime ? "T"+toDate : ""); 
+    output += " start_date_time="+startDate + (startTime ? "T"+startTime : ""); 
+    output += " end_date_time="+endDate + (endTime ? "T"+endTime : ""); 
     output += "]";
     output += title;
     output += "[/schedule]";

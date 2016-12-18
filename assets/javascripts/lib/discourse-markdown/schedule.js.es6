@@ -1,6 +1,6 @@
 import { registerOption } from 'pretty-text/pretty-text';
 
-const WHITELISTED_ATTRIBUTES = ["from", "to"];
+const WHITELISTED_ATTRIBUTES = ["start_date_time", "end_date_time"];
 const ATTRIBUTES_REGEX = new RegExp("(" + WHITELISTED_ATTRIBUTES.join("|") + ")=['\"]?[^\\s\\]]+['\"]?", "g");
 
 registerOption((siteSettings, opts) => {

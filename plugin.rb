@@ -12,9 +12,11 @@ after_initialize do
   puts "calendar plugin initialize"
   puts "PostCalendar class Define"
   puts "#{Rails.root}"
-  
+
+  load File.expand_path(File.dirname(__FILE__)) << '/models/post_schedule.rb'  
+
   module ::DiscourseCalendar
-    autoload :PostSchedule, "#{Rails.root}/plugins/discourse-calendar/models/post_schedule"
+    #autoload :PostSchedule, "#{Rails.root}/plugins/discourse-calendar/models/post_schedule"
 
     class Engine < ::Rails::Engine
       engine_name PLUGIN_NAME
@@ -24,13 +26,23 @@ after_initialize do
 
   class DiscourseCalendar::Schedule
     class << self
-      def validate_schedules(extracted_schedule)
+      def validate(extracted_schedules)
+        puts extracted_schedules
+        schedules = []
+
+        extracted_schedules.each do |schedule|
+          #TODO CALIDATE  start_date_time <= end_date_time
+          #TODO unnessesary files remove
+          schedules << PostSchedule.new(schedule)
+        end
+
         byebug
-        puts extracted_schedule
+        puts schedules
+        schedules
       end
 
-      def extract_schedules(raw, topic_id, user_id)
-        extract_schedules = []
+      def extract(raw, topic_id, user_id)
+        extracted_schedules = []
 
         schedule_pattern = /\[schedule(?:\s+(?:\w+=[^\s]+)\s*)*\].*\[\/schedule\]/
         title_pattern = /^\[schedule(?:\s+(?:\w+=[^\s]+)\s*)*\](.*)\[\/schedule\]$/
@@ -41,32 +53,33 @@ after_initialize do
         puts raw
         puts "into-raw-scan================================================"
 
-        raw.scan(schedule_pattern).each_with_index { |raw_schedule, index|
+        #raw.scan(schedule_pattern).each_with_index { |raw_schedule, index|
+        raw.scan(schedule_pattern).each_with_index do |raw_schedule, index|
           puts "into-raw-scan================================================"
           puts raw_schedule
           puts "into-raw-scan================================================"
           schedule = {}
+          schedule["schedule_number"] = index+1
+
           title = raw_schedule.scan(title_pattern).first.first;
           schedule["title"] = title
-          #raw_schedule.scan(attributes_pattern)[0].split[1..-2].each { |attribute|
-          raw_schedule.scan(header_pattern).first.scan(attributes_pattern).each { |attribute|
-            byebug
+          #raw_schedule.scan(header_pattern).first.scan(attributes_pattern).each { |attribute|
+          raw_schedule.scan(header_pattern).first.scan(attributes_pattern).each do |attribute|
             puts "into raw_schedule scan================================================"
             puts attribute
             puts "into raw_schedule scan================================================"
             key_value = attribute.split("=")
             schedule[key_value[0]] = key_value[1]
-          }
+          end
           puts schedule
-          extract_schedules << schedule
-        }
+          extracted_schedules << schedule
+        end
 
         puts "================================================"
-        puts extract_schedules
+        puts extracted_schedules
         puts "================================================"
-        byebug
 
-        extract_schedules
+        extracted_schedules
       end
     end
   end
@@ -78,33 +91,31 @@ after_initialize do
     after_save do
       puts "calendar plugin post class eval after_save"
 
-      puts self
       #puts self.post_schdules
-
+      puts self
     end
   end 
 
   validate(:post, :validate_schedules) do
-    puts "poll plugin validate!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    puts "calendar  plugin validate!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
     return if !SiteSetting.calendar_enabled? && (self.user && !self.user.staff?)
     
     # only care when raw has changed!
     return unless self.raw_changed?
 
-    extracted_schedules = DiscourseCalendar::Schedule::extract_schedules(self.raw, self.topic_id, self.user_id)
-    return unless (scedules = DiscourseCalendar::Schedule::validate_schedules(extracted_schedules))
+    extracted_schedules = DiscourseCalendar::Schedule::extract(self.raw, self.topic_id, self.user_id)
+    return unless (schedules = DiscourseCalendar::Schedule::validate(extracted_schedules))
 
+    puts "post_schedules #{schedules}"
     # are we updating a post?
     if self.id.present?
       puts "post id exists"
     else
       puts "post id not exists"
-      #self.polls = polls
+      self.post_schedules = schedules
     end
 
     true
   end
-
-
 end
