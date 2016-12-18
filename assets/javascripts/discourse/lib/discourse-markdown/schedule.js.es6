@@ -1,6 +1,6 @@
 import { registerOption } from 'pretty-text/pretty-text';
 
-const WHITELISTED_ATTRIBUTES = ["start_date_time", "end_date_time"];
+const WHITELISTED_ATTRIBUTES = ["title", "all_day", "start_date_time", "end_date_time"];
 const ATTRIBUTES_REGEX = new RegExp("(" + WHITELISTED_ATTRIBUTES.join("|") + ")=['\"]?[^\\s\\]]+['\"]?", "g");
 
 registerOption((siteSettings, opts) => {
@@ -9,14 +9,11 @@ registerOption((siteSettings, opts) => {
 
 export function setup(helper) {
   helper.whiteList([
-    'table',
-    'tbody',
-    'thead',
-    'tr',
-    'td',
-    'td[colspan]',
-    'th',
-    'th[colspan]'
+    'div.ui card',
+    'div.content',
+    'div.extra content',
+    'div.header',
+    'li'
   ]);
 
 
@@ -25,29 +22,69 @@ export function setup(helper) {
     stop: /\[\/schedule\]/igm,
 
     emitter(blockContents, matches) {
-      const result = ["table"];
-      if(blockContents.length){
-        const titleHead = ["tr"];
-        //TODO TITLE locale config set
-        titleHead.push(["th", {"colspan":"4"}, "TITLE"]);
-        result.push(titleHead);
-        const titleBody = ["tr"];
-        titleBody.push(["td", {"colspan":"4"}, String(blockContents[0])]);
-        result.push(titleBody);
+      const schedule = ["div"];
+      const container = ["div", {"class": "ui card"}];
+      const contents = [];
+
+      if (blockContents.length){
+        const postProcess = bc => {
+          if (typeof bc === "string" || bc instanceof String) {
+            const processed = this.processInline(String(bc));
+            if (processed.length) {
+              contents.push(["p"].concat(processed));
+            }
+          } else {
+            contents.push(bc);
+          }
+        };
+
+        let b;
+        while ((b = blockContents.shift()) !== undefined) {
+          this.processBlock(b, blockContents).forEach(postProcess);
+        }
       }
       
-
-      const durations = ["tr"];
+      const title = ["div", {"class": "content"}];
+      const duration = ["div", {"class": "content"}];
+      const extraContents = ["div", {"class": "extra content"}];
+      let startDateTime;
+      let endDateTime;
+      let dateFormat = "LLL";
+      let startEndRange = " ~ ";
       (matches[1].match(ATTRIBUTES_REGEX) || []).forEach(function(m) {
         const [ name, value ] = m.split("=");
         const escaped = helper.escape(value.replace(/["']/g, ""));
-        durations.push(["th", name]);
-        durations.push(["td", escaped]);
+
+        switch (name) {
+          case "title":
+            title.push(["div", {"class": "header"}, escaped]);
+            break;
+
+          case "start_date_time":
+            startDateTime = moment(escaped);
+            break;
+
+          case "end_date_time":
+            endDateTime = moment(escaped);
+            break;
+
+          case "all_day":
+            dateFormat = (escaped === "true") ? "LL" : " LLL";
+            break;
+        }
       });
       
-      result.push(durations);
+      startEndRange = startDateTime.format(dateFormat).concat(startEndRange).concat(endDateTime.format(dateFormat));
+      duration.push(startEndRange);
+      container.push(title);
+      container.push(duration);
+      if(contents && contents.length > 0){
+        extraContents.push(contents[0]);
+        container.push(extraContents);
+      }
+      schedule.push(container);
 
-      return result;
+      return schedule;
     }
   });
 }

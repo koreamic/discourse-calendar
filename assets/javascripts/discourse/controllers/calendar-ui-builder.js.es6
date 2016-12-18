@@ -9,20 +9,30 @@ export default Ember.Controller.extend({
     this._setupSchedule();
   },
 
-  _setupSchedule() {
-    this.setProperties({
-      title: '',
-      startDate: '',
-      startTime: '',
-      endDate: '',
-      endTime: ''
-    });
+  @computed("startDate")
+  disableInsert(startDate) {
+    //debugger;
+    //return /^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/.test(startDate);
+    const test = (/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/.test(startDate));
+    console.log("Test="+test);
+    return  !(/^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/.test(startDate));
+  },
+ 
+  @computed("disableInsert")
+  startDateFormatValidation(disableInsert) {
+    console.log("startDateFormatValidation");
+    let options = { ok: true };
+    
+    if(disableInsert) {
+      options = { failed: true, reason: I18n.t("poll.ui_builder.help.options_count") };
+    }
+
+    return InputValidation.create(options);
   },
 
-  @computed("title", "startDate", "startTime", "endDate", "endTime")
-  scheduleOutput(title, startDate, startTime, endDate, endTime) {
-    let scheduleHeader = '[schedule';
-    let output = '';
+  @computed("title", "startDate", "startTime", "endDate", "endTime", "allDay")
+  scheduleOutput(title, startDate, startTime, endDate, endTime, allDay) {
+    let output = "";
 
     /*
     const match = this.get("toolbarEvent").getText().match(/\[schedule(\s+name=[^\s\]]+)*.*\]/igm);
@@ -33,14 +43,26 @@ export default Ember.Controller.extend({
     };
     */
     
-    output += `${scheduleHeader}`;
+    output += "[schedule";
+    output += " title="+title; 
     output += " start_date_time="+startDate + (startTime ? "T"+startTime : ""); 
     output += " end_date_time="+endDate + (endTime ? "T"+endTime : ""); 
-    output += "]";
-    output += title;
+    output += " all_day="+allDay; 
+    output += "]\n";
     output += "[/schedule]";
     
     return output;
+  },
+
+  _setupSchedule() {
+    this.setProperties({
+      title: '',
+      startDate: '',
+      startTime: '',
+      endDate: '',
+      endTime: '',
+      allDay: true
+    });
   },
 
   actions: {

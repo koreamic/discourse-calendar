@@ -6,9 +6,14 @@
       {{input type="text" value=title}}
     </div>
     <div class="input-group">
-      <label class="input-group-label">From Date Time</label>
+      {{input type='checkbox' checked=allDay}}
+      {{i18n "calendar.ui_builder.all_day"}}
+    </div>
+    <div class="input-group">
+      <label class="input-group-label">Start Date Time</label>
       {{date-picker value=startDate containerId="schedule-start-date-container"}}
       {{input type="time" value=startTime}}
+      {{input-tip validation=startDateFormatValidation}}
     </div>
     <div class="input-group">
       <label class="input-group-label">To Date Time</label>

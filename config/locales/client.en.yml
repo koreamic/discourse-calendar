@@ -4,6 +4,7 @@ en:
       ui_builder:
         title: Add Schedule
         insert: Insert Schedule
+        all_day: Set all day Schedule
       ui:
         show_label: Show Calendar
         hide_label: Hide Calendar

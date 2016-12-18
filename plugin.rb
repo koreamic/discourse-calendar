@@ -75,8 +75,8 @@ after_initialize do
       def extract(raw)
         extracted_schedules = []
 
-        schedule_pattern = /\[schedule(?:\s+(?:\w+=[^\s]+)\s*)*\].*\[\/schedule\]/
-        title_pattern = /^\[schedule(?:\s+(?:\w+=[^\s]+)\s*)*\](.*)\[\/schedule\]$/
+        schedule_pattern = /\[schedule(?:\s+(?:\w+=[^\s]+)\s*)*\][\s\S]*\[\/schedule\]/
+        #title_pattern = /^\[schedule(?:\s+(?:\w+=[^\s]+)\s*)*\](.*)\[\/schedule\]$/
         header_pattern = /^\[schedule(?:\s+(?:\w+=[^\s\]]+)\s*)*\]/
         attributes_pattern = /\w+=[^\s\]]+/
 
@@ -85,8 +85,8 @@ after_initialize do
           schedule["schedule_number"] = index+1
           #byebug
 
-          title = raw_schedule.scan(title_pattern).first.first;
-          schedule["title"] = title
+          #title = raw_schedule.scan(title_pattern).first.first;
+          #schedule["title"] = title
 
           raw_schedule.scan(header_pattern).first.scan(attributes_pattern).each do |attribute|
             key_value = attribute.split("=")
