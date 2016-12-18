@@ -17,6 +17,6 @@ class PostSchedule < ActiveRecord::Base
   private
 
   def self.schedules(start_param, end_param)
-    self.where("start_date < ?", start_param).where("end_date >= ?", end_param)
+    self.where("start_date_time < ?", start_param).where("end_date_time >= ?", end_param)
   end
 end
