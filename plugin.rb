@@ -72,7 +72,6 @@ after_initialize do
     class << self
       def extract(raw)
         extracted_schedules = []
-
         schedule_pattern = /\[schedule(?:\s+(?:\w+=(?:['"][\S\s^\]]+['"]|['"]?[^\s\]]+['"]?))*\s*)*\][\s\S]*\[\/schedule\]/
         header_pattern = /^\[schedule(?:\s+(?:\w+=(?:['"][\S\s^\]]+['"]|['"]?[^\s\]]+['"]?))*\s*)*\]/
         attributes_pattern = /\w+=(?:['"][\S\s^\]]+['"]|['"]?[^\s\]]+['"]?)/
@@ -88,7 +87,7 @@ after_initialize do
 
             if (value[0] == "'" && value[-1] == "'") || (value[0] == "\"" && value[-1] == "\"")
               value = value[1..-2]
-           end
+            end
 
             schedule[key] = value
           end
@@ -106,26 +105,28 @@ after_initialize do
   end 
   
   DiscourseCalendar::Engine.routes.draw do
-    get "/schedules" => "calendar#schedules"
-    get "/schedules/c/:category" => "calendar#category_latest"
-    get "/schedules/c/:category/none" => "calendar#category_none_latest"
-    get "/schedules/c/:parent_category/:category/(:id)" => "calendar#parent_category_category_latest", constraints: { id: /\d+/ }
-    get "/schedules/c/:category/l/top" => "calendar#category_top", as: "calendar_schedule_category_top"
-    get "/schedules/c/:category/none/l/top" => "calendar#category_none_top", as: "calendar_schedule_category_none_top"
-    get "/schedules/c/:parent_category/:category/l/top" => "calendar#parent_category_category_top", as: "calendar_schedule_parent_category_category_top"
+    get "/schedules" => "calendar#latest_schedules"
+    get "/schedules/top" => "calendar#top_schedules"
+    get "/categories/schedules" => "calendar#latest_schedules"
+    get "/schedules/c/:category" => "calendar#category_latest_schedules"
+    get "/schedules/c/:category/none" => "calendar#category_none_latest_schedules"
+    get "/schedules/c/:parent_category/:category/(:id)" => "calendar#parent_category_category_latest_schedules", constraints: { id: /\d+/ }
+    get "/schedules/c/:category/l/top" => "calendar#category_top_schedules", as: "calendar_category_top_schedules"
+    get "/schedules/c/:category/none/l/top" => "calendar#category_none_top_chedules", as: "calendar_category_none_top_schedules"
+    get "/schedules/c/:parent_category/:category/l/top" => "calendar#parent_category_category_top_schedules", as: "calendar_parent_category_category_top_schedules"
 
     TopTopic.periods.each do |period|
-      get "/schedules/top/#{period}" => "calendar#top_#{period}"
-      get "/schedules/c/:category/l/top/#{period}" => "calendar#category_top_#{period}", as: "calendar_schedule_category_top_#{period}"
-      get "/schedules/c/:category/none/l/top/#{period}" => "calendar#category_none_top_#{period}", as: "calendar_schedule_category_none_top_#{period}"
-      get "/schedules/c/:parent_category/:category/l/top/#{period}" => "calednar#parent_category_category_top_#{period}", as: "calendar_schedule_parent_category_category_top_#{period}"
+      get "/schedules/top/#{period}" => "calendar#top_#{period}_schedules"
+      get "/schedules/c/:category/l/top/#{period}" => "calendar#category_top_#{period}_schedules", as: "calendar_schedule_category_top_#{period}_schedules"
+      get "/schedules/c/:category/none/l/top/#{period}" => "calendar#category_none_top_#{period}_schedules", as: "calendar_schedule_category_none_top_#{period}_schedules"
+      get "/schedules/c/:parent_category/:category/l/top/#{period}" => "calednar#parent_category_category_top_#{period}_schedules", as: "calendar_schedule_parent_category_category_top_#{period}_schedules"
     end
 
     Discourse.filters.each do |filter|
-      get "/schedules/#{filter}" => "calendar##{filter}", constraints: { format: /(json|html)/ }
-      get "/schedules/c/:category/l/#{filter}" => "calendar#category_#{filter}", as: "calendar_schedule_category_#{filter}"
-      get "/schedules/c/:category/none/l/#{filter}" => "calendar#category_none_#{filter}", as: "calendar_schedule_category_none_#{filter}"
-      get "/schedules/c/:parent_category/:category/l/#{filter}" => "calendar#parent_category_category_#{filter}", as: "calendar_schedule_parent_category_category_#{filter}"
+      get "/schedules/#{filter}" => "calendar##{filter}_schedules", constraints: { format: /(json|html)/ }
+      get "/schedules/c/:category/l/#{filter}" => "calendar#category_#{filter}_schedules", as: "calendar_schedule_category_#{filter}"
+      get "/schedules/c/:category/none/l/#{filter}" => "calendar#category_none_#{filter}_schedules", as: "calendar_schedule_category_none_#{filter}_schedules"
+      get "/schedules/c/:parent_category/:category/l/#{filter}" => "calendar#parent_category_category_#{filter}_schedules", as: "calendar_schedule_parent_category_category_#{filter}_schedules"
     end
   end
 
@@ -133,89 +134,149 @@ after_initialize do
     mount ::DiscourseCalendar::Engine, at: "/calendar"
   end
 
-  require_dependency "application_controller"
   require_dependency "list_controller"
 
-  #class DiscourseCalendar::CalendarController < ::ApplicationController
   class DiscourseCalendar::CalendarController < ListController
-    #include ApplicationController::ListController
-    #include ListController::ApplicationController
 
     before_filter :set_category, only: [
       # filtered topics lists
-      Discourse.filters.map { |f| :"category_#{f}" },
-      Discourse.filters.map { |f| :"category_none_#{f}" },
-      Discourse.filters.map { |f| :"parent_category_category_#{f}" },
-      Discourse.filters.map { |f| :"parent_category_category_none_#{f}" },
+      Discourse.filters.map { |f| :"category_#{f}_schedules" },
+      Discourse.filters.map { |f| :"category_none_#{f}_schedules" },
+      Discourse.filters.map { |f| :"parent_category_category_#{f}_schedules" },
+      Discourse.filters.map { |f| :"parent_category_category_none_#{f}_schedules" },
       # top summaries
-      :category_top,
-      :category_none_top,
-      :parent_category_category_top,
+      :category_top_schedules,
+      :category_none_top_schedules,
+      :parent_category_category_top_schedules,
       # top pages (ie. with a period)
-      TopTopic.periods.map { |p| :"category_top_#{p}" },
-      TopTopic.periods.map { |p| :"category_none_top_#{p}" },
-      TopTopic.periods.map { |p| :"parent_category_category_top_#{p}" },
+      TopTopic.periods.map { |p| :"category_top_#{p}_schedules" },
+      TopTopic.periods.map { |p| :"category_none_top_#{p}_schedules" },
+      TopTopic.periods.map { |p| :"parent_category_category_top_#{p}_schedules" },
+    ].flatten
 
+    before_filter :ensure_logged_in, except: [
+      # anonymous filters
+      Discourse.anonymous_filters,
+      # anonymous categorized filters
+      Discourse.anonymous_filters.map { |f| :"category_#{f}_schedules" },
+      Discourse.anonymous_filters.map { |f| :"category_none_#{f}_schedules" },
+      Discourse.anonymous_filters.map { |f| :"parent_category_category_#{f}_schedules" },
+      Discourse.anonymous_filters.map { |f| :"parent_category_category_none_#{f}_schedules" },
+      # top summaries
+      :top_schedules,
+      :category_top_schedules,
+      :category_none_top_schedules,
+      :parent_category_category_top_schedules,
+      # top pages (ie. with a period)
+      TopTopic.periods.map { |p| :"top_#{p}_schedules" },
+      TopTopic.periods.map { |p| :"category_top_#{p}_schedules" },
+      TopTopic.periods.map { |p| :"category_none_top_#{p}_schedules" },
+      TopTopic.periods.map { |p| :"parent_category_category_top_#{p}_schedules" },
     ].flatten
     
     TopTopic.periods.each do |period|
-      define_method("category_top_#{period}") do
-        self.send("schedules_#{period}", category: @category.id, limit: false)
+      define_method("top_#{period}_schedules") do |options = {limit: false}|
+        score = "#{period}_score"
+        start_date = Date.strptime(params[:start], '%s')
+        end_date = Date.strptime(params[:end], '%s')
+        list_options = build_topic_list_options
+        list_options.merge!(options) if options
+        user = list_target_user
+
+        topic_query = TopicQuery.new(user, list_options)
+        #topic_results = topic_query.list_top_for(period).topics
+        topic_results = topic_query.latest_results
+        topic_results_top = topic_results.joins(:top_topic).where("top_topics.#{score} > 0")
+
+        schedules = make_schedules(topic_results_top, start_date, end_date)
+
+        render_json_dump(schedules: schedules)
+      end
+
+      define_method("category_top_#{period}_schedules") do
+        self.send("top_#{period}_schedules", category: @category.id, limit: false)
       end
     
       define_method("category_none_top_#{period}") do
-        self.send("schedules_#{period}", category: @category.id, no_subcategories: true, limit: false)
+        self.send("top_#{period}_schedules", category: @category.id, no_subcategories: true, limit: false)
       end
     
       define_method("parent_category_category_top_#{period}") do
-        self.send("schedules_#{period}", category: @category.id, limit: false)
+        self.send("top_#{period}_schedules", category: @category.id, limit: false)
       end
+    end
+
+    def top_schedules(options={limit: false})
+      period = ListController.best_period_for(current_user.try(:previous_visit_at), options[:category])
+      send("top_#{period}_schedules", options)
+    end
+
+    def category_top_schedules
+      top_schedules(category: @category.id, limit: false)
+    end
+
+    def category_none_top_schedules
+      top_schedules(category: @category.id, no_subcategories: true, limit: false)
+    end
+
+    def parent_category_category_top_schedules
+      top_schedules(category: @category.id, limit: false)
     end
 
     Discourse.filters.each do |filter|
-      define_method("category_#{filter}") do
+      define_method("#{filter}_schedules") do |options={limit: false}|
+        start_date = Date.strptime(params[:start], '%s')
+        end_date = Date.strptime(params[:end], '%s')
+        list_options = build_topic_list_options
+        list_options.merge!(options) if options
+        user = list_target_user
+
+        topic_query = TopicQuery.new(user, list_options)
+        #topics = topic_query.public_send("list_#{filter}").topics
+        topics = topic_query.public_send("#{filter}_results")
+
+        schedules = make_schedules(topics, start_date, end_date)
+
+        render_json_dump(schedules: schedules)
+      end
+
+      define_method("category_#{filter}_schedules") do
         canonical_url "#{Discourse.base_url_no_prefix}#{@category.url}"
-        self.send("schedules", category: @category.id, limit: false)
+        self.send("#{filter}_schedules", category: @category.id, limit: false)
       end
    
-      define_method("category_none_#{filter}") do
-        self.send("schedules", category: @category.id, no_subcategories: true, limit: false)
+      define_method("category_none_#{filter}_schedules") do
+        self.send("#{filter}", category: @category.id, no_subcategories: true, limit: false)
       end
    
-      define_method("parent_category_category_#{filter}") do
+      define_method("parent_category_category_#{filter}_schedules") do
         canonical_url "#{Discourse.base_url_no_prefix}#{@category.url}"
-        self.send("schedules", category: @category.id, limit: false)
+        self.send("#{filter}_schedules", category: @category.id, limit: false)
       end
    
-      define_method("parent_category_category_none_#{filter}") do
-        self.send("schedules", category: @category.id, limit: false)
+      define_method("parent_category_category_none_#{filter}_schedules") do
+        self.send("#{filter}_schedules", category: @category.id, limit: false)
       end
-    end
-
-    def category_top
-      schedules(category: @category.id, limit: false)
-    end
-
-    def category_none_top
-      schedules(category: @category.id, no_subcategories: true, limit: false)
-    end
-
-    def parent_category_category_top
-      schedules(category: @category.id, limit: false)
     end
 
     def schedules(options = {limit: false})
-      list_options = build_topic_list_options
-      list_options.merge!(options) if options
-
       start_date = Date.strptime(params[:start], '%s')
       end_date = Date.strptime(params[:end], '%s')
-      
+      list_options = build_topic_list_options
+      list_options.merge!(options) if options
       user = list_target_user
-      
-      #TODO method로 분리
+
       topic_query = TopicQuery.new(user, list_options)
       topic_results = topic_query.latest_results
+
+      schedules = make_schedules(topic_results, start_date, end_date)
+
+      render_json_dump(schedules: schedules)
+    end
+
+    private
+
+    def make_schedules(topic_results, start_date, end_date)
       topic_post_results = topic_results.joins(:posts)
       topic_post_schedule_results = topic_post_results.joins("INNER JOIN post_schedules ON (posts.id = post_schedules.post_id)")
       topic_post_schedule_month_results = topic_post_schedule_results.where("post_schedules.start_date_time < ?", end_date).where("post_schedules.end_date_time >= ?", start_date)
@@ -246,15 +307,14 @@ after_initialize do
         end
       end
 
-      render_json_dump(schedules: schedules)
-
+      schedules
     end
+
   end
 
   validate(:post, :validate_schedules) do
     return if !SiteSetting.calendar_enabled? && (self.user && !self.user.staff?)
     
-    # only care when raw has changed!
     return unless self.raw_changed?
 
     validator = DiscourseCalendar::ScheduleValidator::new(self)
