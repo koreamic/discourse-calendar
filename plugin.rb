@@ -12,6 +12,10 @@ after_initialize do
   load File.expand_path(File.dirname(__FILE__)) << '/models/post_schedule.rb'  
 
   module ::DiscourseCalendar
+    def self.filters
+      @filters ||= [:latest, :unread, :new]
+    end
+
     class Engine < ::Rails::Engine
       engine_name PLUGIN_NAME
       isolate_namespace DiscourseCalendar
@@ -122,7 +126,7 @@ after_initialize do
       get "/schedules/c/:parent_category/:category/l/top/#{period}" => "calednar#parent_category_category_top_#{period}_schedules", as: "calendar_schedule_parent_category_category_top_#{period}_schedules"
     end
 
-    Discourse.filters.each do |filter|
+    DiscourseCalendar.filters.each do |filter|
       get "/schedules/#{filter}" => "calendar##{filter}_schedules", constraints: { format: /(json|html)/ }
       get "/schedules/c/:category/l/#{filter}" => "calendar#category_#{filter}_schedules", as: "calendar_schedule_category_#{filter}"
       get "/schedules/c/:category/none/l/#{filter}" => "calendar#category_none_#{filter}_schedules", as: "calendar_schedule_category_none_#{filter}_schedules"
@@ -223,7 +227,7 @@ after_initialize do
       top_schedules(category: @category.id, limit: false)
     end
 
-    Discourse.filters.each do |filter|
+    DiscourseCalendar.filters.each do |filter|
       define_method("#{filter}_schedules") do |options={limit: false}|
         start_date = Date.strptime(params[:start], '%s')
         end_date = Date.strptime(params[:end], '%s')
