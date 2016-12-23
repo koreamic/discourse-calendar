@@ -9,9 +9,9 @@ function initializeDiscoursePostCalendar(api) {
 
   if (!siteSettings.calendar_enabled && (api.getCurrentUser() && !api.getCurrentUser().staff)) return;
 
+  /*
   const discoveryController = api.container.lookupFactory('controller:discovery');
   //const discoveryController = api.container.lookupFactory('controller:discovery');
-  /*
   discoveryController.reopen({
     isCalendarShow: false,
     calendarLabel: I18n.t('calendar.ui.'),
@@ -23,6 +23,7 @@ function initializeDiscoursePostCalendar(api) {
     }
   });
   */
+
   Ember.ContainerView.reopen({
     didInsertElement : function(){
       this._super();
@@ -30,12 +31,12 @@ function initializeDiscoursePostCalendar(api) {
     },
     afterRenderEvent : function(){
       
-      //toggle hide
-      //calendar destroy
-      //check calendar initialized????
-      //click
-      //-> show -> hide
-      //-> hide -> show -> check reder ? not render, reder calendar
+      // toggle hide
+      // calendar destroy
+      // check calendar initialized????
+      // click
+      // -> show -> hide
+      // -> hide -> show -> check reder ? not render, reder calendar
       const $button = $('.calendar-toggle-button');
       const $div = $('.calendar');
       $button.off('click');
@@ -59,7 +60,6 @@ function initializeDiscoursePostCalendar(api) {
 
   /*
   api.onPageChange(() => {
-    //debugger;
     const $button = $('.calendar-toggle-button');
     $button.off('click');
     $button.click(function(){
@@ -80,13 +80,11 @@ function initializeCalendar($div){
       center: 'title',
       right: 'month,basicWeek,basicDay,listYear'
     },
-    navLinks: true, // can click day/week names to navigate views
+    navLinks: true,   // can click day/week names to navigate views
     editable: false,
     eventLimit: true, // allow "more" link when too many events
     timeFormat:'H:m',
     events : function(start, end, timezone, callback){
-      console.log(Category.id);
-      //debugger;
       $.ajax({
         url: '/calendar/schedules'.concat(location.pathname),
         dataType: 'json',
@@ -104,7 +102,6 @@ function initializeCalendar($div){
     }
   });
 }
-
 
 export default {
   name: "discourse-post-calendar",

@@ -13,11 +13,13 @@
   //border: solid 1px #666;
   //color: #ffffff;
   //border-radius: 3px;
+  padding: 10px 0;
+  &:hover {
+    background: #b2b2b2;
+    color: white;
+  }
 }
-.calendar-toggle-button:hover{
-  background: #b2b2b2;
-  color: white;
-}
+
 
 .discourse-ui-card {
   @extend .ui.card;
@@ -29,3 +31,34 @@
     margin-bottom: 1em;
   } 
 }
+
+.schedule-ui-builder {
+   min-height: 550px;
+   //max-width: 300px;
+  .start-card{
+    width: 300px;
+    float: left;
+  } 
+  
+  .end-card{
+    width: 300px;
+    float: right;
+  } 
+
+  .modal-title{
+    width: 260px;
+  }
+
+  .modal-time{
+    .date-picker {
+      width: 167px;
+    }
+  }
+  
+  .pika-single {
+    position: static !important;
+  }
+}
+
+
+  

@@ -5,4 +5,5 @@ export default ModalBodyView.extend({
 
   templateName: 'modals/schedule-ui-builder',
   title: I18n.t('calendar.schedule.ui_builder.title')
+  
 });

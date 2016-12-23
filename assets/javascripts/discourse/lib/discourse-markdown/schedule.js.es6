@@ -10,7 +10,7 @@ registerOption((siteSettings, opts) => {
 
 export function setup(helper) {
   helper.whiteList([
-    'div.discourse-ui-card',
+    'div.discourse-calendar-schedule discourse-ui-card',
     'div.content',
     'div.extra content',
     'div.header'
@@ -20,13 +20,16 @@ export function setup(helper) {
   helper.replaceBlock({
     //start: /\[schedule((?:\s+\w+=[^\s\]]+)*)\]([\s\S]*)/igm,
     //start: /\[schedule((?:\s+\w+=[\S\s\]]+)*)\]([\s\S]*)/igm,
-    start: /\[schedule((?:\s+\w+=(?:['"][\S\s^\]]+['"]|['"]?[^\s\]]+['"]?))*)\]([\s\S]*)/igm,
+    //start: /\[schedule((?:\s+\w+=(?:['"][\S\s^\]]+['"]|['"]?[^\s\]]+['"]?))*)\]([\s\S]*)/igm,
+    //start: /\[schedule((?:\s+\w+=(?:['"][\S\s^\]]+['"]|['"]?[^\s\]]+['"]?))+)\]([\s\S]*)/igm,
+    //start: /\[schedule((?:\s+(?:title|all_day|start_date_time|end_date_time)=(?:['"][\S\s^\]]+['"]|['"]?[^\s\]]+['"]?))+)\]([\s\S]*)/igm,
+    start: new RegExp("\\[schedule((?:\\s+(?:" + WHITELISTED_ATTRIBUTES.join("|") + ")=(?:['\"][\\S\\s^\\]]+['\"]|['\"]?[^\\s\\]]+['\"]?))+)\\]([\\s\\S]*)", "igm"),
     stop: /\[\/schedule\]/igm,
 
     emitter(blockContents, matches) {
       //const schedule = ["div"];
       //const schedule = ["div", {"class": "ui card"}];
-      const schedule = ["div", {"class": "discourse-ui-card"}];
+      const schedule = ["div", {"class": "discourse-calendar-schedule discourse-ui-card"}];
       const contents = [];
 
       if (blockContents.length){
@@ -88,6 +91,10 @@ export function setup(helper) {
             break;
         }
       });
+
+      if(!startDateTime || isNaN(startDateTime.getDate()) || (endDateTime && isNaN(endDateTime.getDate()))){
+        return ["div"].concat(contents);
+      }
       
       //startEndRange = startDateTime.format(dateFormat).concat(startEndRange).concat(endDateTime.format(dateFormat));
       if(allDay) {

@@ -52,7 +52,7 @@ after_initialize do
 
       def start_date_time_not_nil?(schedule)
         if schedule.start_date_time.nil?
-          @post.errors.add(:base, I18n.t("caledar.schedule.default_schedule_must_have_start_date_time"))
+          @post.errors.add(:base, I18n.t("calendar.schedule.must_have_start_date_time"))
           return false
         end
         true
@@ -61,7 +61,7 @@ after_initialize do
       def valid_date_times?(schedule)
         unless schedule.end_date_time.nil?
           if schedule.start_date_time >= schedule.end_date_time
-            @post.errors.add(:base, I18n.t("caledar.schedule.validate_start_end_date_time"))
+            @post.errors.add(:base, I18n.t("calendar.schedule.validate_start_end_date_time"))
             return false
           end
         end
@@ -76,7 +76,9 @@ after_initialize do
     class << self
       def extract(raw)
         extracted_schedules = []
-        schedule_pattern = /\[schedule(?:\s+(?:\w+=(?:['"][\S\s^\]]+['"]|['"]?[^\s\]]+['"]?))*\s*)*\][\s\S]*\[\/schedule\]/
+        #schedule_pattern = /\[schedule(?:\s+(?:(?:title|start_date_time|end_date_time|all_day)=(?:['"][\S\s^\]]+['"]|['"]?[^\s\]]+['"]?))*\s*)*\][\s\S]*\[\/schedule\]/
+        #schedule_pattern = /\[schedule(?:\s+(?:(?:title|start_date_time|end_date_time|all_day)=(?:['"][\S\s^\]]+['"]|['"]?[^\s\]]+['"]?))*\s*)*\]/
+        schedule_pattern = /\[schedule(?:\s+(?:(?:title|start_date_time|end_date_time|all_day)=(?:['"][^\]\n]+['"]|['"]?[^\s\]]+['"]?))*\s*)*\]/
         header_pattern = /^\[schedule(?:\s+(?:\w+=(?:['"][\S\s^\]]+['"]|['"]?[^\s\]]+['"]?))*\s*)*\]/
         attributes_pattern = /\w+=(?:['"][\S\s^\]]+['"]|['"]?[^\s\]]+['"]?)/
 
