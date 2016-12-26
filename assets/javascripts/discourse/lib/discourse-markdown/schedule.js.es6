@@ -18,12 +18,7 @@ export function setup(helper) {
 
 
   helper.replaceBlock({
-    //start: /\[schedule((?:\s+\w+=[^\s\]]+)*)\]([\s\S]*)/igm,
-    //start: /\[schedule((?:\s+\w+=[\S\s\]]+)*)\]([\s\S]*)/igm,
-    //start: /\[schedule((?:\s+\w+=(?:['"][\S\s^\]]+['"]|['"]?[^\s\]]+['"]?))*)\]([\s\S]*)/igm,
-    //start: /\[schedule((?:\s+\w+=(?:['"][\S\s^\]]+['"]|['"]?[^\s\]]+['"]?))+)\]([\s\S]*)/igm,
-    //start: /\[schedule((?:\s+(?:title|all_day|start_date_time|end_date_time)=(?:['"][\S\s^\]]+['"]|['"]?[^\s\]]+['"]?))+)\]([\s\S]*)/igm,
-    start: new RegExp("\\[schedule((?:\\s+(?:" + WHITELISTED_ATTRIBUTES.join("|") + ")=(?:['\"][\\S\\s^\\]]+['\"]|['\"]?[^\\s\\]]+['\"]?))+)\\]([\\s\\S]*)", "igm"),
+    start: new RegExp("\\[schedule((?:\\s+(?:" + WHITELISTED_ATTRIBUTES.join("|") + ")=(?:['\"][^\\n]+['\"]|[^\\s\\]]+))+)\\]([\\s\\S]*)", "igm"),
     stop: /\[\/schedule\]/igm,
 
     emitter(blockContents, matches) {
@@ -50,7 +45,6 @@ export function setup(helper) {
         }
       }
       
-      const title = ["div", {"class": "content"}];
       const duration = ["div", {"class": "content"}];
       const extraContents = ["div", {"class": "extra content"}];
       let startDateTime;
@@ -72,7 +66,7 @@ export function setup(helper) {
 
         switch (name) {
           case "title":
-            title.push(["div", {"class": "header"}, escaped]);
+            if(escaped) schedule.push(["div", {"class": "content"}, ["div", {"class": "header"}, escaped]]);
             break;
 
           case "start_date_time":
@@ -104,7 +98,6 @@ export function setup(helper) {
       }
 
       duration.push(startEndRange);
-      schedule.push(title);
       schedule.push(duration);
 
       if(contents && contents.length > 0){

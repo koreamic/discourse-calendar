@@ -40,6 +40,10 @@ after_initialize do
             else
               schedule.end_date_time = schedule.start_date_time + 1.hours
             end
+          else
+            if schedule.all_day
+              schedule.end_date_time = schedule.end_date_time.end_of_day
+            end
           end
           return false unless valid_date_times?(schedule)
           schedules << schedule
@@ -76,9 +80,7 @@ after_initialize do
     class << self
       def extract(raw)
         extracted_schedules = []
-        #schedule_pattern = /\[schedule(?:\s+(?:(?:title|start_date_time|end_date_time|all_day)=(?:['"][\S\s^\]]+['"]|['"]?[^\s\]]+['"]?))*\s*)*\][\s\S]*\[\/schedule\]/
-        #schedule_pattern = /\[schedule(?:\s+(?:(?:title|start_date_time|end_date_time|all_day)=(?:['"][\S\s^\]]+['"]|['"]?[^\s\]]+['"]?))*\s*)*\]/
-        schedule_pattern = /\[schedule(?:\s+(?:(?:title|start_date_time|end_date_time|all_day)=(?:['"][^\]\n]+['"]|['"]?[^\s\]]+['"]?))*\s*)*\]/
+        schedule_pattern = /\[schedule(?:\s+(?:(?:title|start_date_time|end_date_time|all_day)=(?:['"][^\n]+['"]|[^\s\]]+))+)\]/
         header_pattern = /^\[schedule(?:\s+(?:\w+=(?:['"][\S\s^\]]+['"]|['"]?[^\s\]]+['"]?))*\s*)*\]/
         attributes_pattern = /\w+=(?:['"][\S\s^\]]+['"]|['"]?[^\s\]]+['"]?)/
 
@@ -113,19 +115,19 @@ after_initialize do
   DiscourseCalendar::Engine.routes.draw do
     get "/schedules" => "calendar#latest_schedules"
     get "/schedules/top" => "calendar#top_schedules"
-    get "/categories/schedules" => "calendar#latest_schedules"
+    get "/schedules/categories" => "calendar#latest_schedules"
     get "/schedules/c/:category" => "calendar#category_latest_schedules"
     get "/schedules/c/:category/none" => "calendar#category_none_latest_schedules"
     get "/schedules/c/:parent_category/:category/(:id)" => "calendar#parent_category_category_latest_schedules", constraints: { id: /\d+/ }
     get "/schedules/c/:category/l/top" => "calendar#category_top_schedules", as: "calendar_category_top_schedules"
-    get "/schedules/c/:category/none/l/top" => "calendar#category_none_top_chedules", as: "calendar_category_none_top_schedules"
+    get "/schedules/c/:category/none/l/top" => "calendar#category_none_top_schedules", as: "calendar_category_none_top_schedules"
     get "/schedules/c/:parent_category/:category/l/top" => "calendar#parent_category_category_top_schedules", as: "calendar_parent_category_category_top_schedules"
 
     TopTopic.periods.each do |period|
       get "/schedules/top/#{period}" => "calendar#top_#{period}_schedules"
       get "/schedules/c/:category/l/top/#{period}" => "calendar#category_top_#{period}_schedules", as: "calendar_schedule_category_top_#{period}_schedules"
       get "/schedules/c/:category/none/l/top/#{period}" => "calendar#category_none_top_#{period}_schedules", as: "calendar_schedule_category_none_top_#{period}_schedules"
-      get "/schedules/c/:parent_category/:category/l/top/#{period}" => "calednar#parent_category_category_top_#{period}_schedules", as: "calendar_schedule_parent_category_category_top_#{period}_schedules"
+      get "/schedules/c/:parent_category/:category/l/top/#{period}" => "calendar#parent_category_category_top_#{period}_schedules", as: "calendar_schedule_parent_category_category_top_#{period}_schedules"
     end
 
     DiscourseCalendar.filters.each do |filter|
@@ -162,12 +164,11 @@ after_initialize do
 
     before_filter :ensure_logged_in, except: [
       # anonymous filters
-      Discourse.anonymous_filters,
+      Discourse.anonymous_filters.map { |f| :"#{f}_schedules" },
       # anonymous categorized filters
       Discourse.anonymous_filters.map { |f| :"category_#{f}_schedules" },
       Discourse.anonymous_filters.map { |f| :"category_none_#{f}_schedules" },
       Discourse.anonymous_filters.map { |f| :"parent_category_category_#{f}_schedules" },
-      Discourse.anonymous_filters.map { |f| :"parent_category_category_none_#{f}_schedules" },
       # top summaries
       :top_schedules,
       :category_top_schedules,
@@ -203,11 +204,11 @@ after_initialize do
         self.send("top_#{period}_schedules", category: @category.id, limit: false)
       end
     
-      define_method("category_none_top_#{period}") do
+      define_method("category_none_top_#{period}_schedules") do
         self.send("top_#{period}_schedules", category: @category.id, no_subcategories: true, limit: false)
       end
     
-      define_method("parent_category_category_top_#{period}") do
+      define_method("parent_category_category_top_#{period}_schedules") do
         self.send("top_#{period}_schedules", category: @category.id, limit: false)
       end
     end
@@ -252,7 +253,7 @@ after_initialize do
       end
    
       define_method("category_none_#{filter}_schedules") do
-        self.send("#{filter}", category: @category.id, no_subcategories: true, limit: false)
+        self.send("#{filter}_schedules", category: @category.id, no_subcategories: true, limit: false)
       end
    
       define_method("parent_category_category_#{filter}_schedules") do
@@ -260,9 +261,6 @@ after_initialize do
         self.send("#{filter}_schedules", category: @category.id, limit: false)
       end
    
-      define_method("parent_category_category_none_#{filter}_schedules") do
-        self.send("#{filter}_schedules", category: @category.id, limit: false)
-      end
     end
 
     def schedules(options = {limit: false})
@@ -302,7 +300,7 @@ after_initialize do
 
           p.post_schedules.each do |s|
             schedule[:id] = s.id
-            schedule[:title] = s.title ? s.title : t.title
+            schedule[:title] = s.title.nil? || s.title.empty? ? t.title : s.title
             schedule[:start_date_time] = s.start_date_time.strftime("%Y-%m-%dT%H:%M:%S")
             schedule[:start] = s.start_date_time.strftime("%Y-%m-%dT%H:%M:%S")
             schedule[:end_date_time] = s.end_date_time.strftime("%Y-%m-%dT%H:%M:%S")
