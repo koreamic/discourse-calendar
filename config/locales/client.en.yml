@@ -7,11 +7,13 @@ en:
           insert: Insert Schedule
           all_day: Set all day Schedule
           input_title: Title
-          input_start_date_time: Start Date Time
-          input_end_date_time: End Date Time
-          help_valid_start_date_time: Enter the valid start date time
-          help_valid_end_date_time: Enter the valid end date time
-          help_valid_date_time: The start date time must be before the end date time.
+          input_start: Start
+          input_end: End
+          input_date: Date
+          input_time: Time
+          help_valid_start_date_time: Enter the valid start.
+          help_valid_end_date_time: Enter the valid end.
+          help_valid_date_time: The start must be before the end.
       ui:
         show_label: Show Calendar
         hide_label: Hide Calendar

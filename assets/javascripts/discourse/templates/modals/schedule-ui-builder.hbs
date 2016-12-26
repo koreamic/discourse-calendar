@@ -1,26 +1,52 @@
-<div id="calendar-modal" class="modal-body schedule-ui-builder" style="height: 370px;">
-  <label class="input-group-label">
+<div id="calendar-modal" class="modal-body schedule-ui-builder">
+  <span class="modal-title-label">
     {{i18n "calendar.schedule.ui_builder.input_title"}}
-  </label>
+  </span>
   {{input type="text" class="modal-title" value=title maxlength=256}}
-  {{input type='checkbox' checked=allDay}}
-  {{i18n "calendar.schedule.ui_builder.all_day"}}
+    <div class="set-all-day">
+      {{input type='checkbox' checked=allDay}}
+      {{i18n "calendar.schedule.ui_builder.all_day"}}
+    </div>      
   <div class="start-card">	    
-    <label class="input-group-label">
-      {{i18n "calendar.schedule.ui_builder.input_start_date_time"}}
-    </label>
-    {{date-picker value=startDate containerId="date-container-start"}}
-    {{input type="time" class="modal-time" value=startTime disabled=isAllDaySchedule}}
+    <span class="modal-sub-title">
+      {{i18n "calendar.schedule.ui_builder.input_start"}}
+    </span>
     {{input-tip validation=startDateTimeValidation}}
+	<div class="modal-date-time-set">
+      <div class="modal-date-area">
+        <label class="input-group-label">
+          {{i18n "calendar.schedule.ui_builder.input_date"}}
+        </label>
+        {{date-picker value=startDate containerId="date-container-start"}}     
+      </div>
+      <div class="modal-time-area">
+        <label class="input-group-label">
+          {{i18n "calendar.schedule.ui_builder.input_time"}}
+        </label>
+        {{input type="time" class="modal-time" value=startTime disabled=isAllDaySchedule}}
+      </div>
+    </div>    
     <div id="date-container-start"/>
   </div>
   <div class="end-card">
-    <label class="input-group-label">
-      {{i18n "calendar.schedule.ui_builder.input_end_date_time"}}
-    </label>
-    {{date-picker value=endDate containerId="date-container-end"}}
-    {{input type="time" class="modal-time" value=endTime disabled=isAllDaySchedule}}
-    {{input-tip validation=scheduleDateTimeValidation}}
+    <span class="modal-sub-title">
+      {{i18n "calendar.schedule.ui_builder.input_end"}}
+    </span>
+    {{input-tip validation=scheduleDateTimeValidation}}    
+	<div class="modal-date-time-set">
+      <div class="modal-date-area">
+        <label class="input-group-label">
+          {{i18n "calendar.schedule.ui_builder.input_date"}}
+        </label>
+        {{date-picker value=endDate containerId="date-container-end"}} 
+      </div>
+      <div class="modal-time-area">
+        <label class="input-group-label">
+          {{i18n "calendar.schedule.ui_builder.input_time"}}
+        </label>
+        {{input type="time" class="modal-time" value=endTime disabled=isAllDaySchedule}}
+      </div>
+    </div>    
     <div id="date-container-end"/>
   </div>
 </div>
