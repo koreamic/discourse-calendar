@@ -80,15 +80,14 @@ after_initialize do
     class << self
       def extract(raw)
         extracted_schedules = []
-        schedule_pattern = /\[schedule(?:\s+(?:(?:title|start_date_time|end_date_time|all_day)=(?:['"][^\n]+['"]|[^\s\]]+))+)\]/
-        header_pattern = /^\[schedule(?:\s+(?:\w+=(?:['"][\S\s^\]]+['"]|['"]?[^\s\]]+['"]?))*\s*)*\]/
-        attributes_pattern = /\w+=(?:['"][\S\s^\]]+['"]|['"]?[^\s\]]+['"]?)/
+        schedule_pattern = /\[schedule(?:(?:\s+(?:title|start_date_time|end_date_time|all_day)=(?:['"][^\n]+['"]|[^\s\]]+))+)\]/
+        attributes_pattern = /\w+=(?:['"][^\n]+['"]|[^\s\]]+)/
 
         raw.scan(schedule_pattern).each_with_index do |raw_schedule, index|
           schedule = {}
           schedule["schedule_number"] = index+1
 
-          raw_schedule.scan(header_pattern).first.scan(attributes_pattern).each do |attribute|
+          raw_schedule.scan(attributes_pattern).each do |attribute|
             index = attribute.index("=")
             key = attribute[0, index]
             value = attribute[index+1..-1]
@@ -239,7 +238,6 @@ after_initialize do
         user = list_target_user
 
         topic_query = TopicQuery.new(user, list_options)
-        #topics = topic_query.public_send("list_#{filter}").topics
         topics = topic_query.public_send("#{filter}_results")
 
         schedules = make_schedules(topics, start_date, end_date)

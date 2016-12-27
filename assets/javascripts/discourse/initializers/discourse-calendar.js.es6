@@ -1,34 +1,17 @@
 import { withPluginApi } from 'discourse/lib/plugin-api';
-import showModal from 'discourse/lib/show-modal';
 import DiscoveryRoute from 'discourse/routes/discovery';
-import DiscoveryController from 'discourse/controllers/discovery';
-import Category from 'discourse/models/category';
 
-function initializeDiscoursePostCalendar(api) {
+function initializeDiscourseCalendar(api) {
   const siteSettings = api.container.lookup('site-settings:main');
 
   if (!siteSettings.calendar_enabled && (api.getCurrentUser() && !api.getCurrentUser().staff)) return;
-
-  /*
-  const discoveryController = api.container.lookupFactory('controller:discovery');
-  //const discoveryController = api.container.lookupFactory('controller:discovery');
-  discoveryController.reopen({
-    isCalendarShow: false,
-    calendarLabel: I18n.t('calendar.ui.'),
-    actions: {
-      toggleCalendar(){
-        debugger;
-        this.isCalednarShow = !this.isCalednarShow;
-      }
-    }
-  });
-  */
 
   Ember.ContainerView.reopen({
     didInsertElement : function(){
       this._super();
       Ember.run.scheduleOnce('afterRender', this, this.afterRenderEvent);
     },
+
     afterRenderEvent : function(){
       
       // toggle hide
@@ -57,19 +40,6 @@ function initializeDiscoursePostCalendar(api) {
       console.log ("Container just got rendered");
     }
   });
-
-  /*
-  api.onPageChange(() => {
-    const $button = $('.calendar-toggle-button');
-    $button.off('click');
-    $button.click(function(){
-        $(".calendar-container").slideToggle("slow");
-    });
-
-    const $div = $('.calendar');
-    if($div.length > 0) initializeCalendar($div);
-  });
-  */
 }
 
 function initializeCalendar($div){
@@ -90,8 +60,7 @@ function initializeCalendar($div){
         dataType: 'json',
         data: {
           start: start.unix(),
-          end: end.unix(),
-          catetory: Category.id
+          end: end.unix()
         },
         method: 'GET',
         success: function(data){
@@ -104,9 +73,9 @@ function initializeCalendar($div){
 }
 
 export default {
-  name: "discourse-post-calendar",
+  name: "discourse-calendar",
 
   initialize() {
-    withPluginApi('0.5', initializeDiscoursePostCalendar);
+    withPluginApi('0.5', initializeDiscourseCalendar);
   }
 };

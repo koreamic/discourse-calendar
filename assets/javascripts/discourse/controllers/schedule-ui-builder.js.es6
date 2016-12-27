@@ -19,7 +19,6 @@ export default Ember.Controller.extend({
  
   @computed("hasValidStartDate", "hasValidStartTime")
   startDateTimeValidation(hasValidStartDate, hasValidStartTime) {
-    console.log("startDateFormatValidation");
     let options = { ok: true };
     
     if(!hasValidStartDate || !hasValidStartTime) {
@@ -98,19 +97,10 @@ export default Ember.Controller.extend({
   scheduleOutput(title, startDate, startTime, endDate, endTime, allDay) {
     let output = "";
 
-    /*
-    const match = this.get("toolbarEvent").getText().match(/\[schedule(\s+name=[^\s\]]+)*.*\]/igm);
-    if (match) {
-      scheduleHeader += ` schedule_number=${match.length + 1}`;
-    }else{
-      scheduleHeader += ` schedule_number=1`;
-    };
-    */
-    
     output += "[schedule";
     output += " title='" + title + "'"; 
-    output += " start_date_time=" + startDate + (startTime ? "T" + startTime : ""); 
-    output += " end_date_time=" + endDate + (endTime ? "T" + endTime : ""); 
+    output += " start_date_time=" + startDate + (allDay ? "" : "T" + startTime); 
+    output += " end_date_time=" + endDate + (allDay ? "" : "T" + endTime); 
     output += " all_day=" + allDay; 
     output += "]\n";
     output += "[/schedule]";
@@ -120,11 +110,11 @@ export default Ember.Controller.extend({
 
   _setupSchedule() {
     this.setProperties({
-      title: '',
-      startDate: '',
-      startTime: '',
-      endDate: '',
-      endTime: '',
+      title: "",
+      startDate: "",
+      startTime: "",
+      endDate: "",
+      endTime: "",
       allDay: true
     });
   },
