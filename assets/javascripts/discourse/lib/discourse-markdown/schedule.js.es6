@@ -1,4 +1,4 @@
-import { registerOption } from 'pretty-text/pretty-text';
+import { registerOption } from "pretty-text/pretty-text";
 
 const DATA_PREFIX = "data-schedule-";
 const WHITELISTED_ATTRIBUTES = ["title", "all_day", "start_date_time", "end_date_time"];
@@ -11,12 +11,12 @@ registerOption((siteSettings, opts) => {
 
 export function setup(helper) {
   helper.whiteList([
-    'div.discourse-calendar-schedule discourse-ui-card',
-    'div[data-*]',
-    'div.content',
-    'div.schedule-date-time content',
-    'div.extra content',
-    'div.header'
+    "div.discourse-calendar-schedule discourse-ui-card",
+    "div[data-*]",
+    "div.content",
+    "div.schedule-date-time content",
+    "div.extra content",
+    "div.header"
   ]);
 
 
@@ -25,8 +25,6 @@ export function setup(helper) {
     stop: /\[\/schedule\]/igm,
 
     emitter(blockContents, matches) {
-      //const schedule = ["div"];
-      //const schedule = ["div", {"class": "ui card"}];
       const attributes = { "class": "discourse-calendar-schedule discourse-ui-card" };
       const contents = [];
 
@@ -58,7 +56,6 @@ export function setup(helper) {
       let allDay = false;
       let startEndRange = " ~ ";
       (matches[1].match(ATTRIBUTES_REGEX) || []).forEach(function(m) {
-        //const [ name, value ] = m.split("=");
         const idx = m.indexOf("=");
         const name = m.substring(0, idx);
         let value = m.substring(idx+1);
@@ -67,25 +64,20 @@ export function setup(helper) {
         }
                
         const escaped = helper.escape(value);
-        //const escaped = helper.escape(value.replace(/["']/g, ""));
-
         switch (name) {
           case "title":
             if(escaped) title.push("div", {"class": "content"}, ["div", {"class": "header"}, escaped]);
             break;
 
           case "start_date_time":
-            //startDateTime = moment(escaped);
             startDateTime = new Date(escaped);
             break;
 
           case "end_date_time":
-            //endDateTime = moment(escaped);
             endDateTime = new Date(escaped);
             break;
 
           case "all_day":
-            //dateFormat = (escaped === "true") ? "LL" : " LLL";
             allDay = (escaped === "true");
             break;
         }
@@ -114,7 +106,6 @@ export function setup(helper) {
         startEndRange = startDateTime.toDateString().concat(" ".concat(startDateTime.toLocaleTimeString())).concat(startEndRange).concat(endDateTime.toDateString().concat(" ".concat(endDateTime.toLocaleTimeString())));
       }
 
-      //const schedule = ["div", {"class": "discourse-calendar-schedule discourse-ui-card"}];
       const schedule = ["div", attributes];
 
       if(title.length > 0) schedule.push(title);

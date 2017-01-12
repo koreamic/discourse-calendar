@@ -1,9 +1,9 @@
-import { withPluginApi } from 'discourse/lib/plugin-api';
+import { withPluginApi } from "discourse/lib/plugin-api";
 
 function initializePostSchedules(api) {
 
   function decorateSchedules($elements, helper) {
-    const $schedules = $('.discourse-calendar-schedule', $elements);
+    const $schedules = $(".discourse-calendar-schedule", $elements);
     if (!$schedules.length) return;
 
     $schedules.each((idx, scheduleElement) => {
@@ -13,7 +13,7 @@ function initializePostSchedules(api) {
       const dateFormat = $schedule.data("schedule-all-day") ? "LL" : "LLL";
       const dateTimeText = moment(start).format(dateFormat).concat(" ~ ").concat(moment(end).format(dateFormat));
 
-      $('.schedule-date-time', $schedule).text(dateTimeText);
+      $(".schedule-date-time", $schedule).text(dateTimeText);
     });
   }
 
@@ -22,7 +22,8 @@ function initializePostSchedules(api) {
 
 export default {
   name: "post-schedules",
+
   initialize() {
-    withPluginApi('0.1', initializePostSchedules);
+    withPluginApi("0.5", initializePostSchedules);
   }
 };

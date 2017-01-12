@@ -10,7 +10,7 @@ register_asset  "javascripts/vendor/fullcalendar/locale-all.js"
 PLUGIN_NAME ||= "discourse-calendar".freeze
 
 after_initialize do
-  load File.expand_path(File.dirname(__FILE__)) << '/models/post_schedule.rb'  
+  load File.expand_path(File.dirname(__FILE__)) << "/models/post_schedule.rb"  
 
   module ::DiscourseCalendar
     def self.filters
@@ -184,8 +184,8 @@ after_initialize do
     TopTopic.periods.each do |period|
       define_method("top_#{period}_schedules") do |options = {limit: false}|
         score = "#{period}_score"
-        start_date = Date.strptime(params[:start], '%s')
-        end_date = Date.strptime(params[:end], '%s')
+        start_date = Date.strptime(params[:start], "%s")
+        end_date = Date.strptime(params[:end], "%s")
         list_options = build_topic_list_options
         list_options.merge!(options) if options
         user = list_target_user
@@ -232,8 +232,8 @@ after_initialize do
 
     DiscourseCalendar.filters.each do |filter|
       define_method("#{filter}_schedules") do |options={limit: false}|
-        start_date = Date.strptime(params[:start], '%s')
-        end_date = Date.strptime(params[:end], '%s')
+        start_date = Date.strptime(params[:start], "%s")
+        end_date = Date.strptime(params[:end], "%s")
         list_options = build_topic_list_options
         list_options.merge!(options) if options
         user = list_target_user
@@ -260,21 +260,6 @@ after_initialize do
         self.send("#{filter}_schedules", category: @category.id, limit: false)
       end
    
-    end
-
-    def schedules(options = {limit: false})
-      start_date = Date.strptime(params[:start], '%s')
-      end_date = Date.strptime(params[:end], '%s')
-      list_options = build_topic_list_options
-      list_options.merge!(options) if options
-      user = list_target_user
-
-      topic_query = TopicQuery.new(user, list_options)
-      topic_results = topic_query.latest_results
-
-      schedules = make_schedules(topic_results, start_date, end_date)
-
-      render_json_dump(schedules: schedules)
     end
 
     private
