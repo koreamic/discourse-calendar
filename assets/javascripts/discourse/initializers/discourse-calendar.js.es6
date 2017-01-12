@@ -1,31 +1,26 @@
 import { withPluginApi } from 'discourse/lib/plugin-api';
-import DiscoveryRoute from 'discourse/routes/discovery';
 
 function initializeDiscourseCalendar(api) {
   const siteSettings = api.container.lookup('site-settings:main');
 
   if (!siteSettings.calendar_enabled && (api.getCurrentUser() && !api.getCurrentUser().staff)) return;
 
-  Ember.ContainerView.reopen({
-    didInsertElement : function(){
-      this._super();
-      Ember.run.scheduleOnce('afterRender', this, this.afterRenderEvent);
-    },
+  api.onPageChange((url, title) => {
+    // toggle hide
+    // calendar destroy
+    // check calendar initialized????
+    // click
+    // -> show -> hide
+    // -> hide -> show -> check reder ? not render, reder calendar
+    const $button = $('.calendar-toggle-button');
 
-    afterRenderEvent : function(){
-      
-      // toggle hide
-      // calendar destroy
-      // check calendar initialized????
-      // click
-      // -> show -> hide
-      // -> hide -> show -> check reder ? not render, reder calendar
-      const $button = $('.calendar-toggle-button');
-      const $div = $('.calendar');
-      $button.off('click');
+    if($button.length < 1) return;
 
+    $button.off('click');
+
+    $(function() {
+      const $calendarContainer = $('.calendar-container');
       $button.click(function(){
-        const $calendarContainer = $('.calendar-container');
         if($calendarContainer.is(':visible')){
           $calendarContainer.slideUp('slow');
           $(this).find('span').text(I18n.t('calendar.ui.show_label'));
@@ -35,28 +30,31 @@ function initializeDiscourseCalendar(api) {
           $('.calendar').fullCalendar('render');
         }
       });
+    });
 
-      if($div.length > 0) initializeCalendar($div);
-      console.log ("Container just got rendered");
-    }
+    const $div = $('.calendar');
+    if($div.length > 0) initializeCalendar(url, $div);
   });
 }
 
-function initializeCalendar($div){
+function initializeCalendar(url, $div){
   $div.fullCalendar('destroy');
   $div.fullCalendar({
     header: {
       left: 'prev,next today',
       center: 'title',
-      right: 'month,basicWeek,basicDay,listYear'
+      right: 'month,agendaWeek,agendaDay,listMonth'
     },
+    locale: moment.locale(),
     navLinks: true,   // can click day/week names to navigate views
     editable: false,
     eventLimit: true, // allow "more" link when too many events
     timeFormat:'H:m',
+    height: 600,
+    contentHeidht: 500,
     events : function(start, end, timezone, callback){
       $.ajax({
-        url: '/calendar/schedules'.concat(location.pathname),
+        url: '/calendar/schedules'.concat(url),
         dataType: 'json',
         data: {
           start: start.unix(),

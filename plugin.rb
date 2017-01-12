@@ -5,6 +5,7 @@
 
 register_asset  "stylesheets/discourse-calendar.scss"
 register_asset  "javascripts/vendor/fullcalendar/fullcalendar.js"
+register_asset  "javascripts/vendor/fullcalendar/locale-all.js"
 
 PLUGIN_NAME ||= "discourse-calendar".freeze
 
