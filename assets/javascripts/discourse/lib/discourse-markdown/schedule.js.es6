@@ -97,15 +97,17 @@ export function setup(helper) {
         }
       }
       
-      attributes[DATA_PREFIX + "start"] = startDateTime.getTime().toString();
-      attributes[DATA_PREFIX + "end"] = endDateTime.getTime().toString();
-      attributes[DATA_PREFIX + "all-day"] = allDay.toString();
-
       if(allDay) {
         startEndRange = startDateTime.toDateString().concat(startEndRange).concat(endDateTime.toDateString());
       }else{
+        startDateTime = new Date(startDateTime.getTime() + (startDateTime.getTimezoneOffset() * 60000));
+        endDateTime = new Date(endDateTime.getTime() + (endDateTime.getTimezoneOffset() * 60000));
         startEndRange = startDateTime.toDateString().concat(" ".concat(startDateTime.toLocaleTimeString())).concat(startEndRange).concat(endDateTime.toDateString().concat(" ".concat(endDateTime.toLocaleTimeString())));
       }
+
+      attributes[DATA_PREFIX + "start"] = startDateTime.getTime().toString();
+      attributes[DATA_PREFIX + "end"] = endDateTime.getTime().toString();
+      attributes[DATA_PREFIX + "all-day"] = allDay.toString();
 
       const schedule = ["div", attributes];
 
