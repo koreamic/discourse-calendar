@@ -6,9 +6,7 @@ const ATTRIBUTES_REGEX = new RegExp("(" + WHITELISTED_ATTRIBUTES.join("|") + ")=
 const VALUE_REGEX = new RegExp("^['\"]?([\\s\\S]+)['\"]?$", "g");
 
 registerOption((siteSettings, opts) => {
-  const currentUser = (opts.getCurrentUser && opts.getCurrentUser(opts.userId)) || opts.currentUser;
-  const staff = currentUser && currentUser.staff;
-  opts.features.schedule = (siteSettings.calendar_enabled || staff);
+  opts.features.schedule = siteSettings.calendar_enabled;
 });
 
 export function setup(helper) {

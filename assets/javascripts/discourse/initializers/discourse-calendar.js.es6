@@ -3,7 +3,7 @@ import { withPluginApi } from "discourse/lib/plugin-api";
 function initializeDiscourseCalendar(api) {
   const siteSettings = api.container.lookup("site-settings:main");
 
-  if (!siteSettings.calendar_enabled && (api.getCurrentUser() && !api.getCurrentUser().staff)) return;
+  if (!siteSettings.calendar_enabled) return;
 
   api.onPageChange((url, title) => {
     const $button = $(".calendar-toggle-button");

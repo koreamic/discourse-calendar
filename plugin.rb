@@ -2,12 +2,15 @@
 # about: A plug-in that allows you to register and lookup schedules.
 # version: 0.0.1
 # authors: koreamic
+# url: https://github.com/koreamic/discourse-calendar
 
 register_asset  "stylesheets/discourse-calendar.scss"
 register_asset  "javascripts/vendor/fullcalendar/fullcalendar.js"
 register_asset  "javascripts/vendor/fullcalendar/locale-all.js"
 
 PLUGIN_NAME ||= "discourse-calendar".freeze
+
+enabled_site_setting :calendar_enabled
 
 after_initialize do
   load File.expand_path(File.dirname(__FILE__)) << "/models/post_schedule.rb"  
@@ -301,7 +304,7 @@ after_initialize do
   end
 
   validate(:post, :validate_schedules) do
-    return if !SiteSetting.calendar_enabled? && (self.user && !self.user.staff?)
+    return if !SiteSetting.calendar_enabled?
     
     return unless self.raw_changed?
 
