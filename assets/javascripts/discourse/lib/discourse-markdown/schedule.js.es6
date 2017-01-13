@@ -6,7 +6,12 @@ const ATTRIBUTES_REGEX = new RegExp("(" + WHITELISTED_ATTRIBUTES.join("|") + ")=
 const VALUE_REGEX = new RegExp("^['\"]?([\\s\\S]+)['\"]?$", "g");
 
 registerOption((siteSettings, opts) => {
-  opts.features.schedule = true;
+  const currentUser = (opts.getCurrentUser && opts.getCurrentUser(opts.userId)) || opts.currentUser;
+  const staff = currentUser && currentUser.staff;
+  const container = Discourse.__container__;
+  const topicFirstPost = container.lookup("controller:composer").get("topicFirstPost");
+
+  opts.features.schedule = (siteSettings.calendar_enabled || staff) && topicFirstPost;
 });
 
 export function setup(helper) {
@@ -18,7 +23,6 @@ export function setup(helper) {
     "div.extra content",
     "div.header"
   ]);
-
 
   helper.replaceBlock({
     start: new RegExp("\\[schedule((?:\\s+(?:" + WHITELISTED_ATTRIBUTES.join("|") + ")=(?:['\"][^\\n]+['\"]|[^\\s\\]]+))+)\\]([\\s\\S]*)", "igm"),
@@ -46,7 +50,6 @@ export function setup(helper) {
         }
       }
       
-
       const title = [];
       const duration = ["div", {"class": "schedule-date-time content"}];
       const extraContents = ["div", {"class": "extra content"}];

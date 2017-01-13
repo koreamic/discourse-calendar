@@ -1,7 +1,7 @@
 # name: discourse-calendar
-# about: A super simple plugin to demonstrate how plugins work
+# about: A plug-in that allows you to register and lookup schedules.
 # version: 0.0.1
-# authors: Awesome Plugin Developer
+# authors: koreamic
 
 register_asset  "stylesheets/discourse-calendar.scss"
 register_asset  "javascripts/vendor/fullcalendar/fullcalendar.js"
@@ -29,7 +29,7 @@ after_initialize do
 
       def validate_schedules
         schedules = []
-        extracted_schedules = DiscourseCalendar::Schedule::extract(@post.raw)
+        extracted_schedules = DiscourseCalendar::Schedule::extract(@post.raw, @post.topic_id)
 
         extracted_schedules.each do |extracted_schedule|
           schedule = PostSchedule.new(extracted_schedule)
@@ -79,13 +79,14 @@ after_initialize do
 
   class DiscourseCalendar::Schedule
     class << self
-      def extract(raw)
+      def extract(raw, topic_id)
         extracted_schedules = []
         schedule_pattern = /\[schedule(?:(?:\s+(?:title|start_date_time|end_date_time|all_day)=(?:['"][^\n]+['"]|[^\s\]]+))+)\]/
         attributes_pattern = /\w+=(?:['"][^\n]+['"]|[^\s\]]+)/
 
         raw.scan(schedule_pattern).each_with_index do |raw_schedule, index|
           schedule = {}
+          schedule["topic_id"] = topic_id
           schedule["schedule_number"] = index+1
 
           raw_schedule.scan(attributes_pattern).each do |attribute|
@@ -100,7 +101,7 @@ after_initialize do
             schedule[key] = value
           end
 
-          extracted_schedules << schedule.slice("schedule_number", "title", "start_date_time", "end_date_time", "all_day")
+          extracted_schedules << schedule.slice("topic_id", "schedule_number", "title", "start_date_time", "end_date_time", "all_day")
         end
 
         extracted_schedules
@@ -111,7 +112,11 @@ after_initialize do
   Post.class_eval do
     has_many :post_schedules, class_name: "PostSchedule", dependent: :delete_all
   end 
-  
+
+  Topic.class_eval do
+    has_many :post_schedules, class_name: "PostSchedule", dependent: :delete_all
+  end 
+
   DiscourseCalendar::Engine.routes.draw do
     get "/schedules" => "calendar#latest_schedules"
     get "/schedules/top" => "calendar#top_schedules"
@@ -191,7 +196,6 @@ after_initialize do
         user = list_target_user
 
         topic_query = TopicQuery.new(user, list_options)
-        #topic_results = topic_query.list_top_for(period).topics
         topic_results = topic_query.latest_results
         topic_results_top = topic_results.joins(:top_topic).where("top_topics.#{score} > 0")
 
@@ -265,34 +269,27 @@ after_initialize do
     private
 
     def make_schedules(topic_results, start_date, end_date)
-      topic_post_results = topic_results.joins(:posts)
-      topic_post_schedule_results = topic_post_results.joins("INNER JOIN post_schedules ON (posts.id = post_schedules.post_id)")
-      topic_post_schedule_month_results = topic_post_schedule_results.where("post_schedules.start_date_time < ?", end_date).where("post_schedules.end_date_time >= ?", start_date)
+      topic_schedule_results = topic_results.joins("INNER JOIN post_schedules ON (topics.id = post_schedules.topic_id)")
+      topic_schedule_range_results = topic_schedule_results.where("post_schedules.start_date_time < ?", end_date).where("post_schedules.end_date_time >= ?", start_date)
       schedules = []
 
-      topic_post_schedule_month_results.each do |t|
+      topic_schedule_range_results.each do |t|
         schedule = {}
         schedule[:topic_title] = t.title
         schedule[:topic_id] = t.id
         schedule[:color] = t.category.color ? "\##{t.category.color}" : "#{SiteSetting.calendar_schedule_default_color}"
+        schedule[:url] = t.relative_url
         
-        t.posts.each do |p|
-          schedule[:post_id] = p.id
-          schedule[:post_url] = p.url
-          schedule[:url] = p.url
-          schedule[:post_full_url] = p.url
-
-          p.post_schedules.each do |s|
-            schedule[:id] = s.id
-            schedule[:title] = s.title.nil? || s.title.empty? ? t.title : s.title
-            schedule[:start_date_time] = s.start_date_time.strftime("%Y-%m-%dT%H:%M:%S")
-            schedule[:start] = s.start_date_time.strftime("%Y-%m-%dT%H:%M:%S")
-            schedule[:end_date_time] = s.end_date_time.strftime("%Y-%m-%dT%H:%M:%S")
-            schedule[:end] = s.end_date_time.strftime("%Y-%m-%dT%H:%M:%S")
-            schedule[:allDay] = s.all_day
-            schedules << schedule.clone
-          end
-        end
+       t.post_schedules.each do |s|
+         schedule[:id] = s.id
+         schedule[:title] = s.title.nil? || s.title.empty? ? t.title : s.title
+         schedule[:start_date_time] = s.start_date_time.strftime("%Y-%m-%dT%H:%M:%S")
+         schedule[:start] = s.start_date_time.strftime("%Y-%m-%dT%H:%M:%S")
+         schedule[:end_date_time] = s.end_date_time.strftime("%Y-%m-%dT%H:%M:%S")
+         schedule[:end] = s.end_date_time.strftime("%Y-%m-%dT%H:%M:%S")
+         schedule[:allDay] = s.all_day
+         schedules << schedule.clone
+       end
       end
 
       schedules
@@ -302,7 +299,7 @@ after_initialize do
 
   validate(:post, :validate_schedules) do
     return if !SiteSetting.calendar_enabled? && (self.user && !self.user.staff?)
-    
+    return unless self.is_first_post?
     return unless self.raw_changed?
 
     validator = DiscourseCalendar::ScheduleValidator::new(self)

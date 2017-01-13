@@ -20,13 +20,13 @@ describe PostsController do
       expect(PostSchedule.where(title: 'Test Driven Development Conference').size).to eq(1)
     end
 
-    it "works on any post" do
+    it "works on only first post" do
       post = Fabricate(:post)
       xhr :post, :create, { topic_id: post.topic.id, raw: "[schedule title='Test Driven Development Conference' start_date_time=2017-01-02 end_date_time=2017-01-05 all_day=true]\n- Location : LA\n- Contents\n 1. TEST1\n 2. TEST2\n[/schedule]" }
       expect(response).to be_success
       json = ::JSON.parse(response.body)
-      expect(json["cooked"]).to match("discourse-calendar-schedule")
-      expect(PostSchedule.where(title: 'Test Driven Development Conference').size).to eq(1)
+      expect(json["cooked"]).not_to match("discourse-calendar-schedule")
+      expect(PostSchedule.where(title: 'Test Driven Development Conference').size).to eq(0)
     end
 
     it "should have start date time" do

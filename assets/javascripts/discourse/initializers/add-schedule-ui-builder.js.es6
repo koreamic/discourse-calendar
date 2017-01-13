@@ -1,4 +1,5 @@
 import { withPluginApi } from "discourse/lib/plugin-api";
+import { default as computed, observes } from 'ember-addons/ember-computed-decorators';
 import showModal from "discourse/lib/show-modal";
 
 function initializeScheduleUIBuilder(api) {
@@ -12,14 +13,19 @@ function initializeScheduleUIBuilder(api) {
       showScheduleBuilder() {
         showModal("schedule-ui-builder").set("toolbarEvent", this.get("toolbarEvent"));
       }
+    },
+    @computed('model.topicFirstPost')
+    topicFirstPost(topicFirstPost){
+      return topicFirstPost;
     }
   });
 
-  api.addToolbarPopupMenuOptionsCallback(function() {
+  api.addToolbarPopupMenuOptionsCallback(() => {
     return {
       action: "showScheduleBuilder",
       icon: "calendar",
-      label: "calendar.schedule.ui_builder.title"
+      label: "calendar.schedule.ui_builder.title",
+      condition: "topicFirstPost"
     };
   });
 }
