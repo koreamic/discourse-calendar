@@ -6,7 +6,9 @@ const ATTRIBUTES_REGEX = new RegExp("(" + WHITELISTED_ATTRIBUTES.join("|") + ")=
 const VALUE_REGEX = new RegExp("^['\"]?([\\s\\S]+)['\"]?$", "g");
 
 registerOption((siteSettings, opts) => {
-  opts.features.schedule = true;
+  const currentUser = (opts.getCurrentUser && opts.getCurrentUser(opts.userId)) || opts.currentUser;
+  const staff = currentUser && currentUser.staff;
+  opts.features.schedule = (siteSettings.calendar_enabled || staff);
 });
 
 export function setup(helper) {
@@ -18,7 +20,6 @@ export function setup(helper) {
     "div.extra content",
     "div.header"
   ]);
-
 
   helper.replaceBlock({
     start: new RegExp("\\[schedule((?:\\s+(?:" + WHITELISTED_ATTRIBUTES.join("|") + ")=(?:['\"][^\\n]+['\"]|[^\\s\\]]+))+)\\]([\\s\\S]*)", "igm"),

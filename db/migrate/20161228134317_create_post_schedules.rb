@@ -11,7 +11,8 @@ class CreatePostSchedules < ActiveRecord::Migration
       t.timestamps
     end
 
-    add_index :post_schedules, [:start_date_time, :end_date_time]
+    add_index :post_schedules, [:start_date_time, :end_date_time], :name => 'idx_post_schedules'
+    add_index :post_schedules, [:post_id, :start_date_time, :end_date_time], :name => 'idx_post_schedules_posts'
   end
 
   def self.down

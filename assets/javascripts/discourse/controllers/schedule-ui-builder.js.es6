@@ -30,7 +30,6 @@ export default Ember.Controller.extend({
 
   @computed("hasValidEndDate", "hasValidEndTime", "hasValidDateTime")
   scheduleDateTimeValidation(hasValidEndDate, hasValidEndTime, hasValidDateTime) {
-    console.log("startDateFormatValidation");
     let options = { ok: true };
     
     if (!hasValidEndDate || !hasValidEndTime) {

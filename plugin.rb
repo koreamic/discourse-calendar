@@ -1,7 +1,7 @@
 # name: discourse-calendar
-# about: A super simple plugin to demonstrate how plugins work
+# about: A plug-in that allows you to register and lookup schedules.
 # version: 0.0.1
-# authors: Awesome Plugin Developer
+# authors: koreamic
 
 register_asset  "stylesheets/discourse-calendar.scss"
 register_asset  "javascripts/vendor/fullcalendar/fullcalendar.js"
