@@ -7,6 +7,7 @@ function initializeDiscourseCalendar(api) {
 
   api.onPageChange((url, title) => {
     const $button = $(".calendar-toggle-button");
+    const postfixUrl = url.replace(Discourse.BaseUri, "");
 
     if($button.length < 1) return;
 
@@ -27,11 +28,11 @@ function initializeDiscourseCalendar(api) {
     });
 
     const $div = $(".calendar");
-    if($div.length > 0) initializeCalendar(url, $div);
+    if($div.length > 0) initializeCalendar(postfixUrl, $div);
   });
 }
 
-function initializeCalendar(url, $div){
+function initializeCalendar(postfixUrl, $div){
   $div.fullCalendar("destroy");
   $div.fullCalendar({
     header: {
@@ -48,7 +49,7 @@ function initializeCalendar(url, $div){
     contentHeidht: 500,
     events : function(start, end, timezone, callback){
       $.ajax({
-        url: "/calendar/schedules".concat(url),
+        url: Discourse.getURL("/calendar/schedules".concat(postfixUrl)),
         dataType: "json",
         data: {
           start: start.unix(),
