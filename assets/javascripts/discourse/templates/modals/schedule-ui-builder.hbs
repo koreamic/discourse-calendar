@@ -1,0 +1,56 @@
+<div id="calendar-modal" class="modal-body schedule-ui-builder">
+  <span class="modal-title-label">
+    {{i18n "calendar.schedule.ui_builder.input_title"}}
+  </span>
+  {{input type="text" class="modal-title" value=title maxlength=256}}
+    <div class="set-all-day">
+      {{input type="checkbox" checked=allDay}}
+      {{i18n "calendar.schedule.ui_builder.all_day"}}
+    </div>      
+  <div class="start-card">	    
+    <span class="modal-sub-title">
+      {{i18n "calendar.schedule.ui_builder.input_start"}}
+    </span>
+    {{input-tip validation=startDateTimeValidation}}
+	<div class="modal-date-time-set">
+      <div class="modal-date-area">
+        <label class="input-group-label">
+          {{i18n "calendar.schedule.ui_builder.input_date"}}
+        </label>
+        {{date-picker value=startDate containerId="date-container-start"}}     
+      </div>
+      <div class="modal-time-area">
+        <label class="input-group-label">
+          {{i18n "calendar.schedule.ui_builder.input_time"}}
+        </label>
+        {{input type="time" class="modal-time" value=startTime disabled=isAllDaySchedule}}
+      </div>
+    </div>    
+    <div id="date-container-start"/>
+  </div>
+  <div class="end-card">
+    <span class="modal-sub-title">
+      {{i18n "calendar.schedule.ui_builder.input_end"}}
+    </span>
+    {{input-tip validation=scheduleDateTimeValidation}}    
+	<div class="modal-date-time-set">
+      <div class="modal-date-area">
+        <label class="input-group-label">
+          {{i18n "calendar.schedule.ui_builder.input_date"}}
+        </label>
+        {{date-picker value=endDate containerId="date-container-end"}} 
+      </div>
+      <div class="modal-time-area">
+        <label class="input-group-label">
+          {{i18n "calendar.schedule.ui_builder.input_time"}}
+        </label>
+        {{input type="time" class="modal-time" value=endTime disabled=isAllDaySchedule}}
+      </div>
+    </div>    
+    <div id="date-container-end"/>
+  </div>
+</div>
+
+<div class="modal-footer">
+  {{d-button action="insertSchedule" icon="calendar" class="btn-primary" label="calendar.schedule.ui_builder.insert" disabled=disableInsert}}
+</div>

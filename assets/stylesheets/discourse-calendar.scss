@@ -1,0 +1,91 @@
+@import "vendor/fullcalendar/fullcalendar";
+@import "vendor/datetimepicker/datetimepicker";
+@import "vendor/semantic-ui/card";
+.calendar {
+  margin: 0 auto;
+}
+
+.calendar-toggle-button{
+  cursor: pointer;
+  text-align: center;
+  background: #e9e9e9;
+  padding: 10px 0;
+  &:hover {
+    background: #b2b2b2;
+    color: white;
+  }
+}
+
+.discourse-ui-card {
+  @extend .ui.card;
+  margin: 1em 1em 1em 1em;
+  &:first-child {
+    margin-top: 1em;
+  } 
+  &:last-child {
+    margin-bottom: 1em;
+  } 
+}
+
+.schedule-ui-builder {
+   height: 570px;
+   padding-left: 40px;   
+  .start-card{
+    width: 280px;
+    float: left;
+    padding-right: 33px;
+    border-right: 1px solid #eee;
+  }   
+  .set-all-day {
+    font-size: 1.2em;    
+    padding-bottom: 13px;
+  }  
+  .end-card{
+    width: 300px;
+    float: right;
+  } 
+  .modal-title-label{
+    font-size: 1.2em;
+    font-weight: bold;    
+    margin-right: 10px;    
+  }
+  .modal-title{
+    width: 565px;
+  }
+  .modal-sub-title{
+    font-size: 1.2em;
+    font-weight: bold;
+    padding-bottom: 2px;
+    padding-right: 10px;
+  }
+  .modal-date-time-set{
+    padding-top: 3px;    
+    padding-bottom: 4px; 
+    display: flex;
+    flex-direction: row;
+    .modal-date-area{
+      order: 1;
+    } 
+    .modal-time-area{
+      order: 2;
+      margin-left: 4px;
+      .modal-time{
+        width: 127px;
+      }
+    }            
+  }  
+  .date-picker{
+     width: 121px;
+  }  
+  .pika-single {
+    position: relative !important;
+    .pika-lendar {
+      border: 1px solid #eee;   
+      padding: 14px;
+      margin: 0;   
+    }
+  }
+}
+
+
+  

@@ -1,0 +1,5 @@
+en:
+  calendar:
+    schedule:
+      must_have_start_date_time: "Schedule must have start date time."
+      validate_start_end_date_time: "The schedule's start date time must be before the end date time."
