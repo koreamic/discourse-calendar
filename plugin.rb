@@ -290,8 +290,10 @@ after_initialize do
             schedule[:title] = s.title.nil? || s.title.empty? ? t.title : s.title
             schedule[:start_date_time] = s.start_date_time.strftime("%Y-%m-%dT%H:%M:%S")
             schedule[:start] = s.start_date_time.strftime("%Y-%m-%dT%H:%M:%S")
-            schedule[:end_date_time] = s.end_date_time.strftime("%Y-%m-%dT%H:%M:%S")
-            schedule[:end] = s.end_date_time.strftime("%Y-%m-%dT%H:%M:%S")
+            schedule[:end_date_time] = s.all_day ? (s.end_date_time + 1.day).strftime("%Y-%m-%dT%H:%M:%S") : s.end_date_time.strftime("%Y-%m-%dT%H:%M:%S")
+            schedule[:end] = s.all_day ? (s.end_date_time + 1.day).strftime("%Y-%m-%dT%H:%M:%S") : s.end_date_time.strftime("%Y-%m-%dT%H:%M:%S")
+            #schedule[:end_date_time] = s.end_date_time.strftime("%Y-%m-%dT%H:%M:%S")
+            #schedule[:end] = s.end_date_time.strftime("%Y-%m-%dT%H:%M:%S")
             schedule[:allDay] = s.all_day
             schedules << schedule.clone
           end
