@@ -4,7 +4,7 @@ import showModal from "discourse/lib/show-modal";
 function initializeScheduleUIBuilder(api) {
   const siteSettings = api.container.lookup("site-settings:main");
 
-  if (!siteSettings.calendar_enabled && (api.getCurrentUser() && !api.getCurrentUser().staff)) return;
+  if (!siteSettings.calendar_enabled) return;
 
   const ComposerController = api.container.lookupFactory("controller:composer");
   ComposerController.reopen({
