@@ -2,16 +2,6 @@ moduleFor("controller:schedule-ui-builder", "controller:schedule-ui-builder", {
   needs: ['controller:modal']
 });
 
-/*
-{
-title: "",
-startDate: "",
-startTime: "",
-endDate: "",
-endTime: "",
-allDay:true
-}
-*/
 test("disableInsert", function() {
   const controller = this.subject();
 
@@ -21,7 +11,8 @@ test("disableInsert", function() {
     startTime: "",
     endDate: "2017-01-09",
     endTime: "",
-    allDay:true
+    allDay:true,
+    timezoneOffset:-540
   });
 
   equal(controller.get("disableInsert"), true, "it should be true");
@@ -52,7 +43,8 @@ test("hasValidStartDate", function() {
     startTime: "",
     endDate: "",
     endTime: "",
-    allDay:true
+    allDay:true,
+    timezoneOffset:-540
   });
 
   equal(controller.get("hasValidStartDate"), true, "it should be true");
@@ -73,7 +65,8 @@ test("hasValidStartTime", function() {
     startTime: "13:09",
     endDate: "",
     endTime: "",
-    allDay:false
+    allDay:false,
+    timezoneOffset:-540
   });
 
   equal(controller.get("hasValidStartTime"), true, "it should be true");
@@ -94,7 +87,8 @@ test("hasValidEndDate", function() {
     startTime: "",
     endDate: "2017-01-09",
     endTime: "",
-    allDay:true
+    allDay:true,
+    timezoneOffset:-540
   });
 
   equal(controller.get("hasValidEndDate"), true, "it should be true");
@@ -115,7 +109,8 @@ test("hasValidEndTime", function() {
     startTime: "",
     endDate: "",
     endTime: "13:09",
-    allDay:false
+    allDay:false,
+    timezoneOffset:-540
   });
 
   equal(controller.get("hasValidEndTime"), true, "it should be true");
@@ -136,7 +131,8 @@ test("hasValidDateTime", function() {
     startTime: "13:00",
     endDate: "2017-01-09",
     endTime: "14:00",
-    allDay:false
+    allDay:false,
+    timezoneOffset:-540
   });
 
   equal(controller.get("hasValidDateTime"), true, "it should be true");
@@ -164,14 +160,15 @@ test("regular schedule", function() {
     startTime: "13:00",
     endDate: "2017-01-09",
     endTime: "14:00",
-    allDay:false
+    allDay:false,
+    timezoneOffset:-540
   });
 
-  equal(controller.get("scheduleOutput"), "[schedule title='Javascript Test Conference' start_date_time=2017-01-09T13:00 end_date_time=2017-01-09T14:00 all_day=false]\n[/schedule]", "it should return the right ouput");
+  equal(controller.get("scheduleOutput"), "[schedule title='Javascript Test Conference' start_date_time=2017-01-09T13:00 end_date_time=2017-01-09T14:00 all_day=false timezone_offset=-540]\n[/schedule]", "it should return the right ouput");
 
   controller.set("allDay", true);
   controller.set("startTime", "");
   controller.set("endTime", "");
-  equal(controller.get("scheduleOutput"), "[schedule title='Javascript Test Conference' start_date_time=2017-01-09 end_date_time=2017-01-09 all_day=true]\n[/schedule]", "it should return the right output");
+  equal(controller.get("scheduleOutput"), "[schedule title='Javascript Test Conference' start_date_time=2017-01-09 end_date_time=2017-01-09 all_day=true timezone_offset=-540]\n[/schedule]", "it should return the right output");
 });
 

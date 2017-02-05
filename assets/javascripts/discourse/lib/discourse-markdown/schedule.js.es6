@@ -1,7 +1,8 @@
 import { registerOption } from "pretty-text/pretty-text";
 
 const DATA_PREFIX = "data-schedule-";
-const WHITELISTED_ATTRIBUTES = ["title", "all_day", "start_date_time", "end_date_time"];
+const WHITELISTED_ATTRIBUTES = ["title", "all_day", "start_date_time", "end_date_time", "timezone_offset"];
+//const WHITELISTED_ATTRIBUTES = ["title", "all_day", "start_date_time", "end_date_time"];
 const ATTRIBUTES_REGEX = new RegExp("(" + WHITELISTED_ATTRIBUTES.join("|") + ")=(['\"][\\S\\s\^\\]]+['\"]|['\"]?[^\\s\\]]+['\"]?)", "g");
 const VALUE_REGEX = new RegExp("^['\"]?([\\s\\S]+)['\"]?$", "g");
 
@@ -51,6 +52,7 @@ export function setup(helper) {
       const extraContents = ["div", {"class": "extra content"}];
       let startDateTime;
       let endDateTime;
+      let timezoneOffset;
       let dateFormat = "LLL";
       let allDay = false;
       let startEndRange = " ~ ";
@@ -58,7 +60,8 @@ export function setup(helper) {
         const idx = m.indexOf("=");
         const name = m.substring(0, idx);
         let value = m.substring(idx+1);
-        if(value.startsWith("'") && value.endsWith("'") || value.startsWith("\"") && value.endsWith("\"")){
+
+        if(value.indexOf("'") == 0 && value.lastIndexOf("'") == (value.length - 1) || value.indexOf("\"") == 0 && value.lastIndexOf("\"") == (value.length -1)){
           value = value.substring(1, value.length-1);
         }
                
@@ -79,6 +82,10 @@ export function setup(helper) {
           case "all_day":
             allDay = (escaped === "true");
             break;
+
+          case "timezone_offset":
+            timezoneOffset = escaped * 60000;
+            break;
         }
       });
 
@@ -95,18 +102,22 @@ export function setup(helper) {
         }
       }
       
+      startDateTime = new Date(startDateTime.getTime() + timezoneOffset);
+      endDateTime = new Date(endDateTime.getTime() + timezoneOffset);
+
       if(allDay) {
         startEndRange = startDateTime.toDateString().concat(startEndRange).concat(endDateTime.toDateString());
       }else{
-        startDateTime = new Date(startDateTime.getTime() + (startDateTime.getTimezoneOffset() * 60000));
-        endDateTime = new Date(endDateTime.getTime() + (endDateTime.getTimezoneOffset() * 60000));
+        //startDateTime = new Date(startDateTime.getTime() + timezoneOffset);
+        //endDateTime = new Date(endDateTime.getTime() + timezoneOffset);
         startEndRange = startDateTime.toDateString().concat(" ".concat(startDateTime.toLocaleTimeString())).concat(startEndRange).concat(endDateTime.toDateString().concat(" ".concat(endDateTime.toLocaleTimeString())));
       }
 
       attributes[DATA_PREFIX + "start"] = startDateTime.getTime().toString();
       attributes[DATA_PREFIX + "end"] = endDateTime.getTime().toString();
       attributes[DATA_PREFIX + "all-day"] = allDay.toString();
-
+      attributes[DATA_PREFIX + "origin-timezone-offset"] = timezoneOffset.toString();
+      
       const schedule = ["div", attributes];
 
       if(title.length > 0) schedule.push(title);

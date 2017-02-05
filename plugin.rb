@@ -35,7 +35,13 @@ after_initialize do
         extracted_schedules = DiscourseCalendar::Schedule::extract(@post.raw)
 
         extracted_schedules.each do |extracted_schedule|
-          schedule = PostSchedule.new(extracted_schedule)
+          #extracted_schedules << schedule.slice("schedule_number", "title", "start_date_time", "end_date_time", "all_day")
+          timezone_offset = extracted_schedule["timezone_offset"].to_f
+
+          #return false unless timezone_offset_not_nil?(timezone_offset)
+          #timezone_offset = timezone_offset.to_f
+
+          schedule = PostSchedule.new(extracted_schedule.slice("schedule_number", "title", "start_date_time", "end_date_time", "all_day"))
           return false unless start_date_time_not_nil?(schedule)
           if schedule.end_date_time.nil?
             if schedule.all_day
@@ -50,6 +56,10 @@ after_initialize do
             end
           end
           return false unless valid_date_times?(schedule)
+
+          schedule.start_date_time += timezone_offset.minutes
+          schedule.end_date_time += timezone_offset.minutes
+
           schedules << schedule
         end
 
@@ -57,6 +67,14 @@ after_initialize do
       end
 
       private
+
+      #def timezone_offset_not_nil?(timezone_offset)
+        #if timezone_offset.nil?
+          #@post.errors.add(:base, I18n.t("calendar.schedule.must_have_timezone_offset"))
+          #return false
+        #end
+        #true
+      #end
 
       def start_date_time_not_nil?(schedule)
         if schedule.start_date_time.nil?
@@ -84,7 +102,7 @@ after_initialize do
     class << self
       def extract(raw)
         extracted_schedules = []
-        schedule_pattern = /\[schedule(?:(?:\s+(?:title|start_date_time|end_date_time|all_day)=(?:['"][^\n]+['"]|[^\s\]]+))+)\]/
+        schedule_pattern = /\[schedule(?:(?:\s+(?:title|start_date_time|end_date_time|all_day|timezone_offset)=(?:['"][^\n]+['"]|[^\s\]]+))+)\]/
         attributes_pattern = /\w+=(?:['"][^\n]+['"]|[^\s\]]+)/
 
         raw.scan(schedule_pattern).each_with_index do |raw_schedule, index|
@@ -103,7 +121,8 @@ after_initialize do
             schedule[key] = value
           end
 
-          extracted_schedules << schedule.slice("schedule_number", "title", "start_date_time", "end_date_time", "all_day")
+          #extracted_schedules << schedule.slice("schedule_number", "title", "start_date_time", "end_date_time", "all_day")
+          extracted_schedules << schedule
         end
 
         extracted_schedules
@@ -187,8 +206,12 @@ after_initialize do
     TopTopic.periods.each do |period|
       define_method("top_#{period}_schedules") do |options = {limit: false}|
         score = "#{period}_score"
-        start_date = Date.strptime(params[:start], "%s")
-        end_date = Date.strptime(params[:end], "%s")
+        #start_date = Date.strptime(params[:start], "%s")
+        #end_date = Date.strptime(params[:end], "%s")
+        start_date = DateTime.strptime(params[:start], "%s")
+        end_date = DateTime.strptime(params[:end], "%s")
+        timezone_offset = params[:offset].to_f
+
         list_options = build_topic_list_options
         list_options.merge!(options) if options
         user = list_target_user
@@ -198,7 +221,7 @@ after_initialize do
         topic_results = topic_query.latest_results
         topic_results_top = topic_results.joins(:top_topic).where("top_topics.#{score} > 0")
 
-        schedules = make_schedules(topic_results_top, start_date, end_date)
+        schedules = make_schedules(topic_results_top, start_date, end_date, timezone_offset)
 
         render_json_dump(schedules: schedules)
       end
@@ -235,8 +258,12 @@ after_initialize do
 
     DiscourseCalendar.filters.each do |filter|
       define_method("#{filter}_schedules") do |options={limit: false}|
-        start_date = Date.strptime(params[:start], "%s")
-        end_date = Date.strptime(params[:end], "%s")
+        #start_date = Date.strptime(params[:start], "%s")
+        #end_date = Date.strptime(params[:end], "%s")
+        start_date = DateTime.strptime(params[:start], "%s")
+        end_date = DateTime.strptime(params[:end], "%s")
+        timezone_offset = params[:offset].to_f
+
         list_options = build_topic_list_options
         list_options.merge!(options) if options
         user = list_target_user
@@ -244,7 +271,7 @@ after_initialize do
         topic_query = TopicQuery.new(user, list_options)
         topics = topic_query.public_send("#{filter}_results")
 
-        schedules = make_schedules(topics, start_date, end_date)
+        schedules = make_schedules(topics, start_date, end_date, timezone_offset)
 
         render_json_dump(schedules: schedules)
       end
@@ -267,10 +294,10 @@ after_initialize do
 
     private
 
-    def make_schedules(topic_results, start_date, end_date)
+    def make_schedules(topic_results, start_date, end_date, timezone_offset)
       topic_post_results = topic_results.joins(:posts)
       topic_post_schedule_results = topic_post_results.joins("INNER JOIN post_schedules ON (posts.id = post_schedules.post_id)")
-      topic_post_schedule_month_results = topic_post_schedule_results.where("post_schedules.start_date_time < ?", end_date).where("post_schedules.end_date_time >= ?", start_date)
+      topic_post_schedule_month_results = topic_post_schedule_results.where("post_schedules.start_date_time < ?", end_date + timezone_offset.minutes).where("post_schedules.end_date_time >= ?", start_date + timezone_offset.minutes)
       schedules = []
 
       topic_post_schedule_month_results.each do |t|
@@ -288,10 +315,10 @@ after_initialize do
           p.post_schedules.each do |s|
             schedule[:id] = s.id
             schedule[:title] = s.title.nil? || s.title.empty? ? t.title : s.title
-            schedule[:start_date_time] = s.start_date_time.strftime("%Y-%m-%dT%H:%M:%S")
-            schedule[:start] = s.start_date_time.strftime("%Y-%m-%dT%H:%M:%S")
-            schedule[:end_date_time] = s.all_day ? (s.end_date_time + 1.day).strftime("%Y-%m-%dT%H:%M:%S") : s.end_date_time.strftime("%Y-%m-%dT%H:%M:%S")
-            schedule[:end] = s.all_day ? (s.end_date_time + 1.day).strftime("%Y-%m-%dT%H:%M:%S") : s.end_date_time.strftime("%Y-%m-%dT%H:%M:%S")
+            schedule[:start_date_time] = (s.start_date_time - timezone_offset).strftime("%Y-%m-%dT%H:%M:%S")
+            schedule[:start] = (s.start_date_time - timezone_offset.minutes).strftime("%Y-%m-%dT%H:%M:%S")
+            schedule[:end_date_time] = s.all_day ? (s.end_date_time + 1.day).strftime("%Y-%m-%dT%H:%M:%S") : (s.end_date_time - timezone_offset.minutes).strftime("%Y-%m-%dT%H:%M:%S")
+            schedule[:end] = s.all_day ? (s.end_date_time + 1.day).strftime("%Y-%m-%dT%H:%M:%S") : (s.end_date_time - timezone_offset.minutes).strftime("%Y-%m-%dT%H:%M:%S")
             #schedule[:end_date_time] = s.end_date_time.strftime("%Y-%m-%dT%H:%M:%S")
             #schedule[:end] = s.end_date_time.strftime("%Y-%m-%dT%H:%M:%S")
             schedule[:allDay] = s.all_day

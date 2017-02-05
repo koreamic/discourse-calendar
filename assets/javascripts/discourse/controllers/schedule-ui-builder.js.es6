@@ -92,8 +92,8 @@ export default Ember.Controller.extend({
     return allDay;
   },
 
-  @computed("title", "startDate", "startTime", "endDate", "endTime", "allDay")
-  scheduleOutput(title, startDate, startTime, endDate, endTime, allDay) {
+  @computed("title", "startDate", "startTime", "endDate", "endTime", "allDay", "timezoneOffset")
+  scheduleOutput(title, startDate, startTime, endDate, endTime, allDay, timezoneOffset) {
     let output = "";
 
     output += "[schedule";
@@ -101,6 +101,7 @@ export default Ember.Controller.extend({
     output += " start_date_time=" + startDate + (allDay ? "" : "T" + startTime); 
     output += " end_date_time=" + endDate + (allDay ? "" : "T" + endTime); 
     output += " all_day=" + allDay; 
+    output += " timezone_offset=" + timezoneOffset; 
     output += "]\n";
     output += "[/schedule]";
     
@@ -114,6 +115,7 @@ export default Ember.Controller.extend({
       startTime: "",
       endDate: "",
       endTime: "",
+      timezoneOffset: new Date().getTimezoneOffset(),
       allDay: true
     });
   },
