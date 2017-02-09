@@ -2,7 +2,6 @@ import { registerOption } from "pretty-text/pretty-text";
 
 const DATA_PREFIX = "data-schedule-";
 const WHITELISTED_ATTRIBUTES = ["title", "all_day", "start_date_time", "end_date_time", "timezone_offset"];
-//const WHITELISTED_ATTRIBUTES = ["title", "all_day", "start_date_time", "end_date_time"];
 const ATTRIBUTES_REGEX = new RegExp("(" + WHITELISTED_ATTRIBUTES.join("|") + ")=(['\"][\\S\\s\^\\]]+['\"]|['\"]?[^\\s\\]]+['\"]?)", "g");
 const VALUE_REGEX = new RegExp("^['\"]?([\\s\\S]+)['\"]?$", "g");
 
@@ -13,7 +12,7 @@ registerOption((siteSettings, opts) => {
 export function setup(helper) {
   helper.whiteList([
     "div.discourse-calendar-schedule discourse-ui-card",
-    "div[data-*]",
+    "div[data-schedule-*]",
     "div.content",
     "div.schedule-date-time content",
     "div.extra content",
@@ -53,7 +52,6 @@ export function setup(helper) {
       let startDateTime;
       let endDateTime;
       let timezoneOffset;
-      let dateFormat = "LLL";
       let allDay = false;
       let startEndRange = " ~ ";
       (matches[1].match(ATTRIBUTES_REGEX) || []).forEach(function(m) {
@@ -93,31 +91,19 @@ export function setup(helper) {
         return ["div"].concat(contents);
       }
 
-      if(!endDateTime){
-        if(allDay){
-         endDateTime = new Date(startDateTime);
-        }else{
-         endDateTime = new Date(startDateTime);
-         endDateTime = endDateTime.setHours(endDateTime.getHours() + 1);
-        }
-      }
-      
-      startDateTime = new Date(startDateTime.getTime() + timezoneOffset);
-      endDateTime = new Date(endDateTime.getTime() + timezoneOffset);
-
       if(allDay) {
         startEndRange = startDateTime.toDateString().concat(startEndRange).concat(endDateTime.toDateString());
       }else{
-        //startDateTime = new Date(startDateTime.getTime() + timezoneOffset);
-        //endDateTime = new Date(endDateTime.getTime() + timezoneOffset);
+        startDateTime = new Date(startDateTime.getTime() + timezoneOffset);
+        endDateTime = new Date(endDateTime.getTime() + timezoneOffset);
         startEndRange = startDateTime.toDateString().concat(" ".concat(startDateTime.toLocaleTimeString())).concat(startEndRange).concat(endDateTime.toDateString().concat(" ".concat(endDateTime.toLocaleTimeString())));
+        attributes[DATA_PREFIX + "origin-timezone-offset"] = timezoneOffset.toString();
       }
 
       attributes[DATA_PREFIX + "start"] = startDateTime.getTime().toString();
       attributes[DATA_PREFIX + "end"] = endDateTime.getTime().toString();
       attributes[DATA_PREFIX + "all-day"] = allDay.toString();
-      attributes[DATA_PREFIX + "origin-timezone-offset"] = timezoneOffset.toString();
-      
+
       const schedule = ["div", attributes];
 
       if(title.length > 0) schedule.push(title);

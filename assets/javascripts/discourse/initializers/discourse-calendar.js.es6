@@ -47,7 +47,7 @@ function initializeCalendar(postfixUrl, $div){
     timeFormat:"H:m",
     height: 600,
     contentHeidht: 500,
-    timezone: "local",
+    timezone: "UTC",
     events : function(start, end, timezone, callback){
       $.ajax({
         url: Discourse.getURL("/calendar/schedules".concat(postfixUrl)),
@@ -55,6 +55,7 @@ function initializeCalendar(postfixUrl, $div){
         data: {
           start: start.unix(),
           end: end.unix(),
+          timezone: timezone,
           offset: new Date().getTimezoneOffset()
         },
         method: "GET",
