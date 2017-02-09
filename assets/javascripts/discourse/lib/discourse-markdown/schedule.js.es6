@@ -92,7 +92,8 @@ export function setup(helper) {
       }
 
       if(allDay) {
-        startEndRange = startDateTime.toDateString().concat(startEndRange).concat(endDateTime.toDateString());
+        //startEndRange = startDateTime.toDateString().concat(startEndRange).concat(endDateTime.toDateString());
+        startEndRange = startDateTime.toUTCString().split(" ").slice(0, 4).join(" ").concat(startEndRange).concat(endDateTime.toUTCString().split(" ").slice(0, 4).join(" "));
       }else{
         startDateTime = new Date(startDateTime.getTime() + timezoneOffset);
         endDateTime = new Date(endDateTime.getTime() + timezoneOffset);
