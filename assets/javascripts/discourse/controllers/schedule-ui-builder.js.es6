@@ -77,9 +77,10 @@ export default Ember.Controller.extend({
     return hasValidEndDate && hasValidEndTime;
   },
 
-  @computed("startDate", "startTime", "endDate", "endTime")
-  hasValidDateTime(startDate, startTime, endDate, endTime) {
-    return new Date(startDate + " " + startTime) <= new Date(endDate + " " + endTime);
+  @computed("allDay", "startDate", "startTime", "endDate", "endTime")
+  hasValidDateTime(allDay, startDate, startTime, endDate, endTime) {
+    if (allDay) return new Date(startDate) <= new Date(endDate);
+    else return new Date(startDate + "T" + startTime + "Z") <= new Date(endDate + "T" + endTime + "Z");
   },
 
   @computed("allDay")
@@ -92,8 +93,25 @@ export default Ember.Controller.extend({
     return allDay;
   },
 
-  @computed("title", "startDate", "startTime", "endDate", "endTime", "allDay", "timezoneOffset")
-  scheduleOutput(title, startDate, startTime, endDate, endTime, allDay, timezoneOffset) {
+  @computed("timezoneOffset")
+  timezoneOffsetString(timezoneOffset) {
+    let sign;
+    let unsignedTimezoneOffset;
+    if (timezoneOffset <= 0){
+      sign = "+"
+      unsignedTimezoneOffset = timezoneOffset * -1;
+    }else{
+      sign = "-"
+      unsignedTimezoneOffset = timezoneOffset * 1;
+    }
+    let offsetDate = new Date(null);
+    offsetDate.setTime(0);
+    offsetDate.setMinutes(unsignedTimezoneOffset);
+    return sign.concat(offsetDate.toISOString().substr(11, 5));
+  },
+
+  @computed("title", "startDate", "startTime", "endDate", "endTime", "allDay", "timezoneOffsetString")
+  scheduleOutput(title, startDate, startTime, endDate, endTime, allDay, timezoneOffsetString) {
     let output = "";
 
     output += "[schedule";
@@ -101,7 +119,7 @@ export default Ember.Controller.extend({
     output += " start_date_time=" + startDate + (allDay ? "" : "T" + startTime); 
     output += " end_date_time=" + endDate + (allDay ? "" : "T" + endTime); 
     output += " all_day=" + allDay; 
-    output += " timezone_offset=" + timezoneOffset; 
+    output += " timezone_offset=" + timezoneOffsetString; 
     output += "]\n";
     output += "[/schedule]";
     

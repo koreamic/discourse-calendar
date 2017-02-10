@@ -70,11 +70,11 @@ export function setup(helper) {
             break;
 
           case "start_date_time":
-            startDateTime = new Date(escaped);
+            startDateTime = escaped;
             break;
 
           case "end_date_time":
-            endDateTime = new Date(escaped);
+            endDateTime = escaped;
             break;
 
           case "all_day":
@@ -82,23 +82,24 @@ export function setup(helper) {
             break;
 
           case "timezone_offset":
-            timezoneOffset = escaped * 60000;
+            timezoneOffset = escaped;
             break;
         }
       });
 
-      if(!startDateTime || isNaN(startDateTime.getDate()) || (endDateTime && isNaN(endDateTime.getDate()))){
-        return ["div"].concat(contents);
-      }
 
       if(allDay) {
-        //startEndRange = startDateTime.toDateString().concat(startEndRange).concat(endDateTime.toDateString());
+        startDateTime = new Date(startDateTime);
+        endDateTime = new Date(endDateTime);
         startEndRange = startDateTime.toUTCString().split(" ").slice(0, 4).join(" ").concat(startEndRange).concat(endDateTime.toUTCString().split(" ").slice(0, 4).join(" "));
       }else{
-        startDateTime = new Date(startDateTime.getTime() + timezoneOffset);
-        endDateTime = new Date(endDateTime.getTime() + timezoneOffset);
+        startDateTime = new Date(startDateTime + timezoneOffset);
+        endDateTime = new Date(endDateTime + timezoneOffset);
         startEndRange = startDateTime.toDateString().concat(" ".concat(startDateTime.toLocaleTimeString())).concat(startEndRange).concat(endDateTime.toDateString().concat(" ".concat(endDateTime.toLocaleTimeString())));
-        attributes[DATA_PREFIX + "origin-timezone-offset"] = timezoneOffset.toString();
+      }
+
+      if(!startDateTime || isNaN(startDateTime.getDate()) || (endDateTime && isNaN(endDateTime.getDate()))){
+        return ["div"].concat(contents);
       }
 
       attributes[DATA_PREFIX + "start"] = startDateTime.getTime().toString();
