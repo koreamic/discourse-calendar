@@ -18,7 +18,7 @@ This plug-in allows users to register schedules and check it easily through cale
 # Installation
 - clone plugin sources in discourse/plugins directory
 ```
-$ git clone http://70.121.244.190/gitnsam/dev-portal/discourse-calendar.git
+$ git clone https://github.com/koreamic/discourse-calendar.git
 ```
 - execute datebase migration
 ```
