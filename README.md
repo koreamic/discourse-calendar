@@ -1,7 +1,18 @@
 # Discourse Calendar Plugin
 
 This plug-in allows users to register schedules and check it easily through calendar views.
-![discourse-calendar](./discourse-calendar.mp4)
+
+# Screen Shots
+- **Calendar view**
+![calendar view](./discourse-calendar-calendar-view.jpg)
+
+- **Modal popup for adding schedule**
+![calendar view](./discourse-calendar-addschedule-modal.jpg)
+
+- **Schedule detail view**
+![calendar view](./discourse-calendar-schedule-detail.jpg)
+
+- **If want more details, See discourse-calendar.mp4**
 
 # Features
 - Users can register schedules in any post.
