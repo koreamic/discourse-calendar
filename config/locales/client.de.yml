@@ -1,0 +1,19 @@
+en:
+  js:
+    calendar:
+      schedule:
+        ui_builder:
+          title: Termin hinzufügen
+          insert: Termin einfügen
+          all_day: ganztägiger Termin
+          input_title: Titel
+          input_start: Beginn
+          input_end: Ende
+          input_date: Datum
+          input_time: Zeit
+          help_valid_start_date_time: Gib einen gültigen Beginn an.
+          help_valid_end_date_time: Gib ein gültiges Ende an.
+          help_valid_date_time: Der Beginn muss vor dem Ende liegen.
+      ui:
+        show_label: Kalender anzeigen
+        hide_label: Kalender ausblenden
