@@ -25,6 +25,6 @@ export default {
   name: "post-schedules",
 
   initialize() {
-    withPluginApi("0.5", initializePostSchedules);
+    withPluginApi("0.8.7", initializePostSchedules);
   }
 };
