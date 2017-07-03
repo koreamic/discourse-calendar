@@ -2,6 +2,7 @@ en:
   site_settings:
     calendar_enabled: "Allow users to create schedules?"
     calendar_schedule_default_color: "A default schedule backbroud color allowed for calendar."
+    calendar_locale: "What locale to format date and calendar"
   calendar:
     schedule:
       must_have_start_date_time: "Schedule must have start date time."
