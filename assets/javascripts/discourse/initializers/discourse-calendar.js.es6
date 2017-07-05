@@ -46,7 +46,7 @@ function initializeCalendar(postfixUrl, $div, locale){
     navLinks: true,
     editable: false,
     eventLimit: true,
-    timeFormat:"H:m",
+    timeFormat:"H:mm",
     height: 600,
     contentHeidht: 500,
     timezone: "local",
