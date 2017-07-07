@@ -1,7 +1,8 @@
 de:
   site_settings:
     calendar_enabled: "Erlaube Benutzer, Termine zu erstellen?"
-    calendar_schedule_default_color: "Die default Hintergrundfarbe eines Termins im Kalender."
+    calendar_schedule_default_color: "Die Standard-Hintergrundfarbe eines Termins im Kalender."
+    calendar_locale: "Datumsformat für den Kalendar"
   calendar:
     schedule:
       must_have_start_date_time: "Termin muss Beginn Datum/Uhrzeit haben."

@@ -8,6 +8,7 @@ function initializeDiscourseCalendar(api) {
   api.onPageChange((url, title) => {
     const $button = $(".calendar-toggle-button");
     const postfixUrl = url.replace(Discourse.BaseUri, "");
+    const locale = siteSettings.calendar_locale;
 
     if($button.length < 1) return;
 
@@ -28,11 +29,12 @@ function initializeDiscourseCalendar(api) {
     });
 
     const $div = $(".calendar");
-    if($div.length > 0) initializeCalendar(postfixUrl, $div);
+
+    if($div.length > 0) initializeCalendar(postfixUrl, $div, locale);
   });
 }
 
-function initializeCalendar(postfixUrl, $div){
+function initializeCalendar(postfixUrl, $div, locale){
   $div.fullCalendar("destroy");
   $div.fullCalendar({
     header: {
@@ -40,11 +42,11 @@ function initializeCalendar(postfixUrl, $div){
       center: "title",
       right: "month,agendaWeek,agendaDay,listMonth"
     },
-    locale: moment.locale(),
+    locale: moment.locale(locale),
     navLinks: true,
     editable: false,
     eventLimit: true,
-    timeFormat:"H:m",
+    timeFormat:"H:mm",
     height: 600,
     contentHeidht: 500,
     timezone: "local",
@@ -71,6 +73,6 @@ export default {
   name: "discourse-calendar",
 
   initialize() {
-    withPluginApi("0.5", initializeDiscourseCalendar);
+    withPluginApi("0.8.7", initializeDiscourseCalendar);
   }
 };

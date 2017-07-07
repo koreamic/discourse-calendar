@@ -5,3 +5,6 @@ plugins:
   calendar_schedule_default_color:
     default: 'black'
     client: true
+  calendar_locale:
+    default: 'en-US'
+    client: true
