@@ -6,8 +6,7 @@ function initializeScheduleUIBuilder(api) {
 
   if (!siteSettings.calendar_enabled) return;
 
-  const ComposerController = api.container.lookupFactory("controller:composer");
-  ComposerController.reopen({
+  api.modifyClass('controller:composer', {
     actions: {
       showScheduleBuilder() {
         showModal("schedule-ui-builder").set("toolbarEvent", this.get("toolbarEvent"));
@@ -28,6 +27,6 @@ export default {
   name: "add-schedule-ui-builder",
 
   initialize() {
-    withPluginApi("0.5", initializeScheduleUIBuilder);
+    withPluginApi("0.8.7", initializeScheduleUIBuilder);
   }
 };
