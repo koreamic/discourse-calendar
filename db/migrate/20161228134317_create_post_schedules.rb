@@ -1,4 +1,4 @@
-class CreatePostSchedules < ActiveRecord::Migration
+class CreatePostSchedules < ActiveRecord::Migration[5.1]
 
   def self.up
     create_table :post_schedules do |t|
