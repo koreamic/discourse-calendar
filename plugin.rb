@@ -154,7 +154,7 @@ after_initialize do
 
   class DiscourseCalendar::CalendarController < ListController
 
-    before_filter :set_category, only: [
+    before_action :set_category, only: [
       # filtered topics lists
       Discourse.filters.map { |f| :"category_#{f}_schedules" },
       Discourse.filters.map { |f| :"category_none_#{f}_schedules" },
@@ -170,7 +170,7 @@ after_initialize do
       TopTopic.periods.map { |p| :"parent_category_category_top_#{p}_schedules" },
     ].flatten
 
-    before_filter :ensure_logged_in, except: [
+    before_action :ensure_logged_in, except: [
       # anonymous filters
       Discourse.anonymous_filters.map { |f| :"#{f}_schedules" },
       # anonymous categorized filters
